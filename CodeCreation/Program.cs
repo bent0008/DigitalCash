@@ -1,6 +1,5 @@
-// Ben Turnock
-// Program for Digital Cash
-
+﻿// Ben Turnock
+// Digital Cash
 
 using System;
 using System.IO;
@@ -14,18 +13,16 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.ComponentModel;
-using System.Windows.Forms;
 
 
 namespace NewNamespace
 {
-	class NewClass
-	{
-		static void Main(string[] args)
-		{
-			Console.WriteLine("Hello World!");
-			Console.ReadKey();
-		}
-	}
+    class NewClass
+    {
+        static void Main(string[] args)
+        {
+            Console.WriteLine("Hello World!");
+            Console.ReadKey();
+        }
+    }
 }
-
