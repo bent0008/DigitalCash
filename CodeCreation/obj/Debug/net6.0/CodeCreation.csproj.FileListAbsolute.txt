@@ -1,0 +1,15 @@
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\bin\Debug\net6.0\CodeCreation.exe
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\bin\Debug\net6.0\CodeCreation.deps.json
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\bin\Debug\net6.0\CodeCreation.runtimeconfig.json
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\bin\Debug\net6.0\CodeCreation.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\bin\Debug\net6.0\CodeCreation.pdb
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\CodeCreation.csproj.AssemblyReference.cache
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\CodeCreation.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\CodeCreation.AssemblyInfoInputs.cache
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\CodeCreation.AssemblyInfo.cs
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\CodeCreation.csproj.CoreCompileInputs.cache
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\CodeCreation.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\refint\CodeCreation.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\CodeCreation.pdb
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\CodeCreation.genruntimeconfig.cache
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\CodeCreation\obj\Debug\net6.0\ref\CodeCreation.dll
