@@ -17,7 +17,7 @@ namespace Bank
             InitializeComponent();
         }
 
-        private void submitBtn_Click(object sender, EventArgs e)
+        private void SubmitBtn_Click(object sender, EventArgs e)
         {
             string username = customerNameTxtbx.Text;
             string password = customerPwdTxtbx.Text;

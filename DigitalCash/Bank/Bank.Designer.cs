@@ -29,6 +29,7 @@
         private void InitializeComponent()
         {
             this.addCustomerBtn = new System.Windows.Forms.Button();
+            this.moneyOrderBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // addCustomerBtn
@@ -39,16 +40,27 @@
             this.addCustomerBtn.TabIndex = 0;
             this.addCustomerBtn.Text = "Add Customer";
             this.addCustomerBtn.UseVisualStyleBackColor = true;
-            this.addCustomerBtn.Click += new System.EventHandler(this.addCustomerBtn_Click);
+            this.addCustomerBtn.Click += new System.EventHandler(this.AddCustomerBtn_Click);
+            // 
+            // moneyOrderBtn
+            // 
+            this.moneyOrderBtn.Location = new System.Drawing.Point(105, 127);
+            this.moneyOrderBtn.Name = "moneyOrderBtn";
+            this.moneyOrderBtn.Size = new System.Drawing.Size(94, 23);
+            this.moneyOrderBtn.TabIndex = 1;
+            this.moneyOrderBtn.Text = "Money Order";
+            this.moneyOrderBtn.UseVisualStyleBackColor = true;
+            this.moneyOrderBtn.Click += new System.EventHandler(this.MoneyOrderBtn_Click);
             // 
             // BankForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.moneyOrderBtn);
             this.Controls.Add(this.addCustomerBtn);
             this.Name = "BankForm";
-            this.Text = "Form1";
+            this.Text = "Bank";
             this.ResumeLayout(false);
 
         }
@@ -56,5 +68,6 @@
         #endregion
 
         private Button addCustomerBtn;
+        private Button moneyOrderBtn;
     }
 }

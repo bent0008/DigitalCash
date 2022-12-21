@@ -17,7 +17,7 @@ namespace Bank
             InitializeComponent();
         }
 
-        private void closeBtn_Click(object sender, EventArgs e)
+        private void CloseBtn_Click(object sender, EventArgs e)
         {
             this.Close();
         }

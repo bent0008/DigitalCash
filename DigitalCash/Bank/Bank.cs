@@ -7,10 +7,16 @@ namespace Bank
             InitializeComponent();
         }
 
-        private void addCustomerBtn_Click(object sender, EventArgs e)
+        private void AddCustomerBtn_Click(object sender, EventArgs e)
         {
-            AddCustomer addcust = new();
-            addcust.Show();
+            AddCustomer addCust = new();
+            addCust.Show();
+        }
+
+        private void MoneyOrderBtn_Click(object sender, EventArgs e)
+        {
+            MoneyOrder newOrder = new();
+            newOrder.Show();
         }
     }
 }

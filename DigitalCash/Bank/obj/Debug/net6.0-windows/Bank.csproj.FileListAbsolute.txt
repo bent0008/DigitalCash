@@ -19,3 +19,4 @@ C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Bank\obj\Debug\
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Bank\obj\Debug\net6.0-windows\Bank.UsernameWarningBox.resources
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Bank\obj\Debug\net6.0-windows\Bank.BalanceWarningBox.resources
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Bank\obj\Debug\net6.0-windows\Bank.PasswordWarningBox.resources
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Bank\obj\Debug\net6.0-windows\Bank.MoneyOrder.resources
