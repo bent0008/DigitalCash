@@ -18,5 +18,10 @@ namespace Bank
             MoneyOrder newOrder = new();
             newOrder.Show();
         }
+
+        private void CustomerLoginBtn_Click(object sender, EventArgs e)
+        {
+
+        }
     }
 }
