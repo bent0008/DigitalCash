@@ -26,67 +26,44 @@ namespace Customer
 
         private void SubmitBtn_Click(object sender, EventArgs e)
         {
+            bool codeExecuted = false;
+
             SqlConnection con = new SqlConnection(connectionString);
             con.Open();
 
             string username = usernameTxtbx.Text;
             string password = passwordTxtbx.Text;
 
-            if (con.State == System.Data.ConnectionState.Open)
-            {
-                MessageBox.Show("Connection successful");
-            }
 
+            string query = "SELECT [balance]FROM LoginCredentials WHERE username = @username AND password = @password";
 
-            if (string.IsNullOrEmpty(username))
-            {
-                UsernameWarningBox userWarn = new();
-                userWarn.Show();
-
-                usernameTxtbx.Clear();
-                passwordTxtbx.Clear();
-            }
-            else if (string.IsNullOrEmpty(password))
-            {
-                PasswordWarningBox passWarn = new();
-                passWarn.Show();
-
-                usernameTxtbx.Clear();
-                passwordTxtbx.Clear();
-            }
-
-            string query = "INSERT INTO [dbo].[LoginCredentials]([username],[password],[balance]) VALUES(@username,@password,@balance)";
             SqlCommand cmd = new SqlCommand(query, con);
+
             cmd.Parameters.AddWithValue("@username", username);
             cmd.Parameters.AddWithValue("@password", password);
 
-            //for (int i = 0; i < lengthOfDatabase; i++)
-            //{
-            //    if (usernameDatabase[i] == username)
-            //    {
-            //        if (passwordDatabase[i] == password)
-            //        {
-            //            List<string> customer = new();
-            //            // username > balance
-            //            customer.Append(username);
-            //            customer.Append(balanceDatabase[i]);
-            //            MessageBox.Show("Welcome " + username + "\nYou have " + balanceDatabase[i]);
-            //        }
-            //        else
-            //        {
-            //            PasswordWarningBox passWarn = new();
-            //            passWarn.Show();
-            //        }
-            //    }
-            //    else
-            //    {
-            //        UsernameWarningBox userWarn = new();
-            //        userWarn.Show();
-            //    }
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    string dbBalance = reader.GetValue(0).ToString();
+                    MessageBox.Show("$" + dbBalance);
+                    MessageBox.Show(username + " " + password);
+                    codeExecuted= true;
+                }
+                if (codeExecuted == false)
+                {
+                    MessageBox.Show("Error, the username or password is invalid.", "Error");
+                    usernameTxtbx.Clear();
+                    passwordTxtbx.Clear();
+                }
+                else
+                {
+                    con.Close();
+                    this.Close();
+                }
+            }
 
-            //}
-
-            con.Close();
         }
     }
 }

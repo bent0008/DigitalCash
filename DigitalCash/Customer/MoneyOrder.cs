@@ -10,6 +10,7 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 
 namespace Customer
 {
@@ -44,21 +45,43 @@ namespace Customer
 
             string amount = moneyAmountTxtbx.Text;
             int occurances = 100;
-            Random rand = new();
-            int serialNum = rand.Next(1000000, 9999999);
 
-            if (con.State == System.Data.ConnectionState.Open)
+
+            // delete previous MoneyOrder table elements
+            string deleteQuery = "DELETE FROM [dbo].[MoneyOrder]";
+            SqlCommand comm = new SqlCommand(deleteQuery, con);
+            comm.ExecuteNonQuery();
+
+            for (int i = 1; i < (occurances + 1); i++)
             {
-                MessageBox.Show("Connection successful");
-            }
+                Random rand = new();
+                int serialNum = rand.Next(1000000, 9999999);
 
-            MessageBox.Show(serialNum.ToString());
-            //MessageBox.Show();
+                // add these to MoneyOrder
+                string query = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
+                SqlCommand cmd = new SqlCommand(query, con);
 
-            for (int i = 0; i < occurances; i++)
-            {
-                // index, amount, serialNum
+                // Insert them to MoneyOrder
+                cmd.Parameters.AddWithValue("@index", i);
+                cmd.Parameters.AddWithValue("@moneyAmount", amount);
+                cmd.Parameters.AddWithValue("@serialNumber", serialNum);
+
+                cmd.ExecuteNonQuery();
+
+                // add these to ArchivedOrders
+                string queryTwo = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
+                SqlCommand cmd2 = new SqlCommand(queryTwo, con);
+
+                // Insert them to ArchivedOrders
+                cmd2.Parameters.AddWithValue("@index", i);
+                cmd2.Parameters.AddWithValue("@moneyAmount", amount);
+                cmd2.Parameters.AddWithValue("@serialNumber", serialNum);
+
+                cmd2.ExecuteNonQuery();
+
+                
             }
+            this.Close();
         }
 
         private void GenerateIdentifier()

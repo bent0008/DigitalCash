@@ -4,9 +4,6 @@
     <Compile Update="AddCustomer.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Update="BalanceWarningBox.cs">
-      <SubType>Form</SubType>
-    </Compile>
     <Compile Update="Customer.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -14,12 +11,6 @@
       <SubType>Form</SubType>
     </Compile>
     <Compile Update="MoneyOrder.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="PasswordWarningBox.cs">
-      <SubType>Form</SubType>
-    </Compile>
-    <Compile Update="UsernameWarningBox.cs">
       <SubType>Form</SubType>
     </Compile>
   </ItemGroup>

@@ -32,15 +32,9 @@ namespace Customer
             string balance = customerBalanceTxtbx.Text;
 
 
-            if (con.State == System.Data.ConnectionState.Open)
-            {
-                MessageBox.Show("Connection successful");
-            }
-
             if (string.IsNullOrEmpty(username))
             {
-                UsernameWarningBox userWarn = new();
-                userWarn.Show();
+                MessageBox.Show("Error, the username can not be empty", "Error");
 
                 customerNameTxtbx.Clear();
                 customerPwdTxtbx.Clear();
@@ -48,8 +42,7 @@ namespace Customer
             }
             else if (string.IsNullOrEmpty(password))
             {
-                PasswordWarningBox passWarn = new();
-                passWarn.Show();
+                MessageBox.Show("Error, the password can not be empty", "Error");
 
                 customerNameTxtbx.Clear();
                 customerPwdTxtbx.Clear();
@@ -57,8 +50,7 @@ namespace Customer
             }
             else if (string.IsNullOrEmpty(balance))
             {
-                BalanceWarningBox balWarn = new();
-                balWarn.Show();
+                MessageBox.Show("Error, the balance can not be empty", "Error");
 
                 customerNameTxtbx.Clear();
                 customerPwdTxtbx.Clear();

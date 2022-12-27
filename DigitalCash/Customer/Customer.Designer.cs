@@ -45,7 +45,7 @@
             // 
             // moneyOrderBtn
             // 
-            this.moneyOrderBtn.Location = new System.Drawing.Point(122, 313);
+            this.moneyOrderBtn.Location = new System.Drawing.Point(105, 317);
             this.moneyOrderBtn.Name = "moneyOrderBtn";
             this.moneyOrderBtn.Size = new System.Drawing.Size(94, 23);
             this.moneyOrderBtn.TabIndex = 1;
