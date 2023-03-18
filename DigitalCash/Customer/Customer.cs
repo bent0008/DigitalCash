@@ -1,3 +1,12 @@
+using System.Data.SqlClient;
+using System.Data.SqlTypes;
+using System.Security.Cryptography;
+using System.Text;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.IO;
+using System.Data;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
+
 namespace Customer
 {
     public partial class CustomerForm : Form
@@ -5,6 +14,16 @@ namespace Customer
         public CustomerForm()
         {
             InitializeComponent();
+        }
+
+        public string Username { get; set; }
+        public int Balance { get; set; }
+        public bool LoggedIn { get; set; }
+
+        private void UpdateLabels()
+        {
+            usernameLbl.Text = Username;
+            balanceAmountLbl.Text = "$" + Balance;
         }
 
         private void AddCustomerBtn_Click(object sender, EventArgs e)
@@ -22,7 +41,15 @@ namespace Customer
         private void CustomerLoginBtn_Click(object sender, EventArgs e)
         {
             Login custLogin = new();
-            custLogin.Show();
+            custLogin.ShowDialog(this);
+            UpdateLabels();
         }
+
+        private void EncryptBtn_Click(object sender, EventArgs e)
+        {
+            Encrypt encr = new();
+            encr.Show();
+        }
+
     }
 }

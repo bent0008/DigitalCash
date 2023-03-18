@@ -34,6 +34,7 @@
             this.moneyAmountLbl = new System.Windows.Forms.Label();
             this.ProgressBar = new System.Windows.Forms.StatusStrip();
             this.moneyProgressBar = new System.Windows.Forms.ToolStripProgressBar();
+            this.encryptChkbx = new System.Windows.Forms.CheckBox();
             this.ProgressBar.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -88,11 +89,22 @@
             this.moneyProgressBar.Name = "moneyProgressBar";
             this.moneyProgressBar.Size = new System.Drawing.Size(570, 16);
             // 
+            // encryptChkbx
+            // 
+            this.encryptChkbx.AutoSize = true;
+            this.encryptChkbx.Location = new System.Drawing.Point(271, 88);
+            this.encryptChkbx.Name = "encryptChkbx";
+            this.encryptChkbx.Size = new System.Drawing.Size(66, 19);
+            this.encryptChkbx.TabIndex = 5;
+            this.encryptChkbx.Text = "Encrypt";
+            this.encryptChkbx.UseVisualStyleBackColor = true;
+            // 
             // MoneyOrder
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(584, 311);
+            this.Controls.Add(this.encryptChkbx);
             this.Controls.Add(this.ProgressBar);
             this.Controls.Add(this.moneyAmountLbl);
             this.Controls.Add(this.moneyAmountTxtbx);
@@ -116,5 +128,6 @@
         private Label moneyAmountLbl;
         private StatusStrip ProgressBar;
         private ToolStripProgressBar moneyProgressBar;
+        private CheckBox encryptChkbx;
     }
 }

@@ -28,24 +28,18 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.addCustomerBtn = new System.Windows.Forms.Button();
             this.moneyOrderBtn = new System.Windows.Forms.Button();
             this.CustomerLoginBtn = new System.Windows.Forms.Button();
+            this.EncryptBtn = new System.Windows.Forms.Button();
+            this.balanceAmountLbl = new System.Windows.Forms.Label();
+            this.usernameLbl = new System.Windows.Forms.Label();
+            this.balanceLbl = new System.Windows.Forms.Label();
+            this.userLbl = new System.Windows.Forms.Label();
             this.SuspendLayout();
-            // 
-            // addCustomerBtn
-            // 
-            this.addCustomerBtn.Location = new System.Drawing.Point(105, 85);
-            this.addCustomerBtn.Name = "addCustomerBtn";
-            this.addCustomerBtn.Size = new System.Drawing.Size(94, 23);
-            this.addCustomerBtn.TabIndex = 0;
-            this.addCustomerBtn.Text = "New Customer";
-            this.addCustomerBtn.UseVisualStyleBackColor = true;
-            this.addCustomerBtn.Click += new System.EventHandler(this.AddCustomerBtn_Click);
             // 
             // moneyOrderBtn
             // 
-            this.moneyOrderBtn.Location = new System.Drawing.Point(105, 317);
+            this.moneyOrderBtn.Location = new System.Drawing.Point(286, 118);
             this.moneyOrderBtn.Name = "moneyOrderBtn";
             this.moneyOrderBtn.Size = new System.Drawing.Size(94, 23);
             this.moneyOrderBtn.TabIndex = 1;
@@ -55,7 +49,7 @@
             // 
             // CustomerLoginBtn
             // 
-            this.CustomerLoginBtn.Location = new System.Drawing.Point(105, 125);
+            this.CustomerLoginBtn.Location = new System.Drawing.Point(12, 12);
             this.CustomerLoginBtn.Name = "CustomerLoginBtn";
             this.CustomerLoginBtn.Size = new System.Drawing.Size(94, 23);
             this.CustomerLoginBtn.TabIndex = 2;
@@ -63,24 +57,80 @@
             this.CustomerLoginBtn.UseVisualStyleBackColor = true;
             this.CustomerLoginBtn.Click += new System.EventHandler(this.CustomerLoginBtn_Click);
             // 
+            // EncryptBtn
+            // 
+            this.EncryptBtn.Location = new System.Drawing.Point(286, 195);
+            this.EncryptBtn.Name = "EncryptBtn";
+            this.EncryptBtn.Size = new System.Drawing.Size(94, 23);
+            this.EncryptBtn.TabIndex = 3;
+            this.EncryptBtn.Text = "Encrypt";
+            this.EncryptBtn.UseVisualStyleBackColor = true;
+            this.EncryptBtn.Click += new System.EventHandler(this.EncryptBtn_Click);
+            // 
+            // balanceAmountLbl
+            // 
+            this.balanceAmountLbl.AutoSize = true;
+            this.balanceAmountLbl.Location = new System.Drawing.Point(453, 15);
+            this.balanceAmountLbl.Name = "balanceAmountLbl";
+            this.balanceAmountLbl.Size = new System.Drawing.Size(0, 15);
+            this.balanceAmountLbl.TabIndex = 12;
+            // 
+            // usernameLbl
+            // 
+            this.usernameLbl.AutoSize = true;
+            this.usernameLbl.Location = new System.Drawing.Point(193, 15);
+            this.usernameLbl.Name = "usernameLbl";
+            this.usernameLbl.Size = new System.Drawing.Size(0, 15);
+            this.usernameLbl.TabIndex = 11;
+            // 
+            // balanceLbl
+            // 
+            this.balanceLbl.AutoSize = true;
+            this.balanceLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.balanceLbl.Location = new System.Drawing.Point(395, 9);
+            this.balanceLbl.Name = "balanceLbl";
+            this.balanceLbl.Padding = new System.Windows.Forms.Padding(5);
+            this.balanceLbl.Size = new System.Drawing.Size(135, 27);
+            this.balanceLbl.TabIndex = 10;
+            this.balanceLbl.Text = "Balance:                        ";
+            // 
+            // userLbl
+            // 
+            this.userLbl.AutoSize = true;
+            this.userLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.userLbl.Location = new System.Drawing.Point(154, 9);
+            this.userLbl.Name = "userLbl";
+            this.userLbl.Padding = new System.Windows.Forms.Padding(5);
+            this.userLbl.Size = new System.Drawing.Size(117, 27);
+            this.userLbl.TabIndex = 9;
+            this.userLbl.Text = "User:                        ";
+            // 
             // CustomerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(630, 415);
+            this.Controls.Add(this.balanceAmountLbl);
+            this.Controls.Add(this.usernameLbl);
+            this.Controls.Add(this.balanceLbl);
+            this.Controls.Add(this.userLbl);
+            this.Controls.Add(this.EncryptBtn);
             this.Controls.Add(this.CustomerLoginBtn);
             this.Controls.Add(this.moneyOrderBtn);
-            this.Controls.Add(this.addCustomerBtn);
             this.Name = "CustomerForm";
             this.Text = "Customer";
             this.ResumeLayout(false);
+            this.PerformLayout();
 
         }
 
         #endregion
-
-        private Button addCustomerBtn;
         private Button moneyOrderBtn;
         private Button CustomerLoginBtn;
+        private Button EncryptBtn;
+        private Label balanceAmountLbl;
+        private Label usernameLbl;
+        private Label balanceLbl;
+        private Label userLbl;
     }
 }

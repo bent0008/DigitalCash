@@ -10,6 +10,7 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SqlClient;
 using System.Xml.Linq;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace Customer
 {
@@ -33,7 +34,7 @@ namespace Customer
 
             string username = usernameTxtbx.Text;
             string password = passwordTxtbx.Text;
-
+            int dbBalance = 0;
 
             string query = "SELECT [balance]FROM LoginCredentials WHERE username = @username AND password = @password";
 
@@ -46,10 +47,8 @@ namespace Customer
             {
                 while (reader.Read())
                 {
-                    string dbBalance = reader.GetValue(0).ToString();
-                    MessageBox.Show("$" + dbBalance);
-                    MessageBox.Show(username + " " + password);
-                    codeExecuted= true;
+                    dbBalance = reader.GetInt32(0);
+                    codeExecuted = true;
                 }
                 if (codeExecuted == false)
                 {
@@ -59,9 +58,26 @@ namespace Customer
                 }
                 else
                 {
+                    CustomerForm custForm = this.Owner as CustomerForm;
+
+                    if (custForm != null)
+                    {
+                        custForm.Balance = Convert.ToInt32(dbBalance);
+                        custForm.Username = username;
+                        custForm.LoggedIn = true;
+                        con.Close();
+                        this.DialogResult = DialogResult.OK;
+                        this.Close();
+                    }
+                    else
+                    {
+                        MessageBox.Show("Error: the bank form was not found.", "Error");
+                    }
+
                     con.Close();
                     this.Close();
                 }
+                reader.Close();
             }
 
         }

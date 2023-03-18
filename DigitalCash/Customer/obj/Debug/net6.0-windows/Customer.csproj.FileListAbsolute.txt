@@ -25,3 +25,4 @@ C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\De
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net6.0-windows\Customer.pdb
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net6.0-windows\Customer.genruntimeconfig.cache
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net6.0-windows\ref\Customer.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net6.0-windows\Customer.Encrypt.resources
