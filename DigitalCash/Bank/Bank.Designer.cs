@@ -39,6 +39,8 @@
             this.DepositBtn = new System.Windows.Forms.Button();
             this.DecryptBtn = new System.Windows.Forms.Button();
             this.NewCustBtn = new System.Windows.Forms.Button();
+            this.TestBtn = new System.Windows.Forms.Button();
+            this.TestTwoBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // UnblindBtn
@@ -149,11 +151,33 @@
             this.NewCustBtn.UseVisualStyleBackColor = true;
             this.NewCustBtn.Click += new System.EventHandler(this.NewCustBtn_Click);
             // 
+            // TestBtn
+            // 
+            this.TestBtn.Location = new System.Drawing.Point(386, 342);
+            this.TestBtn.Name = "TestBtn";
+            this.TestBtn.Size = new System.Drawing.Size(75, 23);
+            this.TestBtn.TabIndex = 12;
+            this.TestBtn.Text = "Test";
+            this.TestBtn.UseVisualStyleBackColor = true;
+            this.TestBtn.Click += new System.EventHandler(this.TestBtn_Click);
+            // 
+            // TestTwoBtn
+            // 
+            this.TestTwoBtn.Location = new System.Drawing.Point(386, 386);
+            this.TestTwoBtn.Name = "TestTwoBtn";
+            this.TestTwoBtn.Size = new System.Drawing.Size(75, 23);
+            this.TestTwoBtn.TabIndex = 13;
+            this.TestTwoBtn.Text = "TestTwo";
+            this.TestTwoBtn.UseVisualStyleBackColor = true;
+            this.TestTwoBtn.Click += new System.EventHandler(this.TestTwoBtn_Click);
+            // 
             // Bank
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.TestTwoBtn);
+            this.Controls.Add(this.TestBtn);
             this.Controls.Add(this.NewCustBtn);
             this.Controls.Add(this.DecryptBtn);
             this.Controls.Add(this.DepositBtn);
@@ -185,5 +209,7 @@
         private Button DepositBtn;
         private Button DecryptBtn;
         private Button NewCustBtn;
+        private Button TestBtn;
+        private Button TestTwoBtn;
     }
 }

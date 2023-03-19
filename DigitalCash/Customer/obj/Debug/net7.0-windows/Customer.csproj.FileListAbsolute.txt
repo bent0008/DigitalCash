@@ -1,8 +1,4 @@
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.exe
-C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.deps.json
-C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.runtimeconfig.json
-C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.dll
-C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.pdb
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\System.Data.SqlClient.dll
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\runtimes\win-arm64\native\sni.dll
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\runtimes\win-x64\native\sni.dll
@@ -24,5 +20,9 @@ C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\De
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.dll
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\refint\Customer.dll
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.pdb
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.deps.json
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.runtimeconfig.json
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.pdb
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.genruntimeconfig.cache
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\ref\Customer.dll

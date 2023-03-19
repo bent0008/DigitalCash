@@ -1,3 +1,4 @@
+using Customer;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -316,6 +317,49 @@ namespace Bank
             con.Close();
         }
 
+        private void TestBtn_Click(object sender, EventArgs e)
+        {
+            SqlConnection con = new SqlConnection(connectionString);
+            con.Open();
+
+            RSACryptography rsa = new RSACryptography();
+
+            string query = "SELECT [index],[moneyAmount],[serialNumber] FROM [dbo].[MoneyOrder]";
+
+            using SqlCommand cmd = new SqlCommand(query, con);
+
+            using SqlDataReader reader = cmd.ExecuteReader();
+
+            while (reader.Read())
+            {
+                int index = reader.GetInt32(0);
+                string amountString = reader.GetString(1);
+                string serialNumberString = reader.GetString(2);
+
+                MessageBox.Show(amountString);
+
+                string privateKey = rsa.GetPrivateKey();
+
+                string decryptedAmount = rsa.Decrypt(amountString, privateKey);
+                string decryptedSerial = rsa.Decrypt(serialNumberString, privateKey);
+
+                MessageBox.Show(decryptedAmount, "Amount");
+                MessageBox.Show(decryptedSerial, "Serial");
+            }
+            reader.Close();
+            con.Close();
+        }
+        private void TestTwoBtn_Click(object sender, EventArgs e)
+        {
+            string encrypted = "BRaPvMhN7knabf+RrF296q2PW9aVYEM2hDDcahd1j0VHK2o+Wr8Mh/sq8esspYAJy/eagOtH9UFFqlarAs8C4BCGnCbqo9WFpoo58MNvwsUmOFvvvwqV+SW0A5VidObr6ow4xQaJf/3+q6XATvc9W/2FuZq9Ct12vJyuYC+ttDM=";
+            RSACryptography rsa = new RSACryptography();
+
+            string privateKey = rsa.GetPrivateKey();
+
+            string decrypted = rsa.Decrypt(encrypted, privateKey);
+
+            MessageBox.Show(decrypted, "decrypted");
+        }
 
         public string Username { get; set; }
         public int Balance { get; set; }
@@ -347,5 +391,7 @@ namespace Bank
             addCust.ShowDialog(this);
             UpdateLabels();
         }
+
+
     }
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Numerics;
@@ -12,6 +13,7 @@ using System.Security;
 using System.Security.Cryptography;
 using System.Reflection;
 using System.Xml.Serialization;
+using System.Net;
 
 namespace Customer
 {
@@ -62,6 +64,66 @@ namespace Customer
             BigInteger phi = (P - 1) * (Q - 1);
             BigInteger D = (2*(phi)+1)/E;
 
+
+            // Convert D to a byte array
+            byte[] dBytes = D.ToByteArray();
+
+            // Create a new byte array with the desired format
+            byte[] dFormatted = new byte[64];  // For example, use 64 bytes
+            dFormatted[0] = dBytes[0];
+
+            for (int i = 1; i < dFormatted.Length; i++)
+            {
+                dFormatted[i] = 0;
+            }
+
+            // Set the first byte to 0x00 (if necessary)
+            if (dFormatted[0] > 0x7F)
+            {
+                byte[] temp = new byte[dFormatted.Length + 1];
+                Array.Copy(dFormatted, 0, temp, 1, dFormatted.Length);
+                dFormatted = temp;
+            }
+
+            // Set the second byte to 0x02 (for a positive integer)
+            dFormatted[1] = 0x02;
+
+            // Set the third byte to the length of the value (in bytes)
+            dFormatted[2] = (byte)dBytes.Length;
+
+            // Copy the value bytes to the end of the array
+            Array.Copy(dBytes, 0, dFormatted, dFormatted.Length - dBytes.Length, dBytes.Length);
+
+            // Convert N to a byte array
+            byte[] nBytes = N.ToByteArray();
+
+            // Create a new byte array with the desired format
+            byte[] nFormatted = new byte[64];  // For example, use 64 bytes
+
+            nFormatted[0] = nBytes[0];
+            for (int i = 1; i < nFormatted.Length; i++)
+            {
+                nFormatted[i] = 0;
+            }
+
+            // Set the first byte to 0x00 (if necessary)
+            if (nFormatted[0] > 0x7F)
+            {
+                byte[] temp = new byte[nFormatted.Length + 1];
+                Array.Copy(nFormatted, 0, temp, 1, nFormatted.Length);
+                nFormatted = temp;
+            }
+
+            // Set the second byte to 0x02 (for a positive integer)
+            nFormatted[1] = 0x02;
+
+            // Set the third byte to the length of the value (in bytes)
+            nFormatted[2] = (byte)nBytes.Length;
+
+            // Copy the value bytes to the end of the array
+            Array.Copy(nBytes, 0, nFormatted, nFormatted.Length - nBytes.Length, nBytes.Length);
+
+
             // Create a new RSA instance with custom parameters
             var rsa = new RSACryptoServiceProvider();
             var rsaParams = new RSAParameters
@@ -69,8 +131,8 @@ namespace Customer
                 P = p,
                 Q = q,
                 Exponent = e,
-                D = Encoding.UTF8.GetBytes(D.ToString()),
-                Modulus = Encoding.UTF8.GetBytes(N.ToString())
+                D = dFormatted,
+                Modulus = nFormatted
             };
             rsa.ImportParameters(rsaParams);
 
@@ -225,11 +287,28 @@ namespace Customer
             MessageBox.Show(finalText.ToString(), "end");
         }
 
+        private void NewBtn_Click(object sender, EventArgs e)
+        {
+            RSACryptography rsa = new RSACryptography();
+
+            string publicKey = rsa.GetPublicKey();
+
+            string encryptedData = rsa.Encrypt("100", publicKey);
+            Debug.WriteLine(encryptedData);
+
+            string privateKey = rsa.GetPrivateKey();
+            string decrypted = rsa.Decrypt(encryptedData, privateKey);
+            Debug.WriteLine(decrypted);
+        }
+
         private void GenKeysBtn_Click(object sender, EventArgs e)
         {
             CreateKey();
+            //ManualKey();
             MessageBox.Show("New key generated.");
         }
+
+
 
 
 

@@ -36,6 +36,7 @@
             this.TestBtn = new System.Windows.Forms.Button();
             this.ClassBtn = new System.Windows.Forms.Button();
             this.BasicBtn = new System.Windows.Forms.Button();
+            this.NewBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // encryptLbl
@@ -114,11 +115,22 @@
             this.BasicBtn.UseVisualStyleBackColor = true;
             this.BasicBtn.Click += new System.EventHandler(this.BasicBtn_Click);
             // 
+            // NewBtn
+            // 
+            this.NewBtn.Location = new System.Drawing.Point(316, 371);
+            this.NewBtn.Name = "NewBtn";
+            this.NewBtn.Size = new System.Drawing.Size(75, 23);
+            this.NewBtn.TabIndex = 9;
+            this.NewBtn.Text = "New";
+            this.NewBtn.UseVisualStyleBackColor = true;
+            this.NewBtn.Click += new System.EventHandler(this.NewBtn_Click);
+            // 
             // Encrypt
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.NewBtn);
             this.Controls.Add(this.BasicBtn);
             this.Controls.Add(this.ClassBtn);
             this.Controls.Add(this.TestBtn);
@@ -143,5 +155,6 @@
         private Button TestBtn;
         private Button ClassBtn;
         private Button BasicBtn;
+        private Button NewBtn;
     }
 }
