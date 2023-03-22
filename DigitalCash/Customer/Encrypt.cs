@@ -6,7 +6,6 @@ using System.Drawing;
 using System.Diagnostics;
 using System.Linq;
 using System.Text;
-using System.Numerics;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Security;
@@ -47,110 +46,110 @@ namespace Customer
             File.WriteAllText(Path.Combine(merchantDirectory, publicKeyFile), rsa.ToXmlString(false));
         }
 
-        private void ManualKey()
-        {
-            // Set p, q, and e equal to 17, 23, and 5 respectively
-            byte[] p = new byte[] { 0x11 };
-            byte[] q = new byte[] { 0x17 };
-            byte[] e = new byte[] { 0x05 };
+        //private void ManualKey()
+        //{
+        //    // Set p, q, and e equal to 17, 23, and 5 respectively
+        //    byte[] p = new byte[] { 0x11 };
+        //    byte[] q = new byte[] { 0x17 };
+        //    byte[] e = new byte[] { 0x05 };
 
-            // Convert the byte arrays to BigInteger objects
-            BigInteger P = new BigInteger(p);
-            BigInteger Q = new BigInteger(q);
-            BigInteger E = new BigInteger(e);
+        //    // Convert the byte arrays to BigInteger objects
+        //    BigInteger P = new BigInteger(p);
+        //    BigInteger Q = new BigInteger(q);
+        //    BigInteger E = new BigInteger(e);
 
-            // Calculate n and d
-            BigInteger N = P * Q;
-            BigInteger phi = (P - 1) * (Q - 1);
-            BigInteger D = (2*(phi)+1)/E;
-
-
-            // Convert D to a byte array
-            byte[] dBytes = D.ToByteArray();
-
-            // Create a new byte array with the desired format
-            byte[] dFormatted = new byte[64];  // For example, use 64 bytes
-            dFormatted[0] = dBytes[0];
-
-            for (int i = 1; i < dFormatted.Length; i++)
-            {
-                dFormatted[i] = 0;
-            }
-
-            // Set the first byte to 0x00 (if necessary)
-            if (dFormatted[0] > 0x7F)
-            {
-                byte[] temp = new byte[dFormatted.Length + 1];
-                Array.Copy(dFormatted, 0, temp, 1, dFormatted.Length);
-                dFormatted = temp;
-            }
-
-            // Set the second byte to 0x02 (for a positive integer)
-            dFormatted[1] = 0x02;
-
-            // Set the third byte to the length of the value (in bytes)
-            dFormatted[2] = (byte)dBytes.Length;
-
-            // Copy the value bytes to the end of the array
-            Array.Copy(dBytes, 0, dFormatted, dFormatted.Length - dBytes.Length, dBytes.Length);
-
-            // Convert N to a byte array
-            byte[] nBytes = N.ToByteArray();
-
-            // Create a new byte array with the desired format
-            byte[] nFormatted = new byte[64];  // For example, use 64 bytes
-
-            nFormatted[0] = nBytes[0];
-            for (int i = 1; i < nFormatted.Length; i++)
-            {
-                nFormatted[i] = 0;
-            }
-
-            // Set the first byte to 0x00 (if necessary)
-            if (nFormatted[0] > 0x7F)
-            {
-                byte[] temp = new byte[nFormatted.Length + 1];
-                Array.Copy(nFormatted, 0, temp, 1, nFormatted.Length);
-                nFormatted = temp;
-            }
-
-            // Set the second byte to 0x02 (for a positive integer)
-            nFormatted[1] = 0x02;
-
-            // Set the third byte to the length of the value (in bytes)
-            nFormatted[2] = (byte)nBytes.Length;
-
-            // Copy the value bytes to the end of the array
-            Array.Copy(nBytes, 0, nFormatted, nFormatted.Length - nBytes.Length, nBytes.Length);
+        //    // Calculate n and d
+        //    BigInteger N = P * Q;
+        //    BigInteger phi = (P - 1) * (Q - 1);
+        //    BigInteger D = (2*(phi)+1)/E;
 
 
-            // Create a new RSA instance with custom parameters
-            var rsa = new RSACryptoServiceProvider();
-            var rsaParams = new RSAParameters
-            {
-                P = p,
-                Q = q,
-                Exponent = e,
-                D = dFormatted,
-                Modulus = nFormatted
-            };
-            rsa.ImportParameters(rsaParams);
+        //    // Convert D to a byte array
+        //    byte[] dBytes = D.ToByteArray();
 
-            // Export public key
-            RSAParameters publicKeyParams = rsa.ExportParameters(false);
-            XmlSerializer serializer = new XmlSerializer(typeof(RSAParameters));
-            using (TextWriter writer = new StreamWriter("publickey.xml"))
-            {
-                serializer.Serialize(writer, publicKeyParams);
-            }
+        //    // Create a new byte array with the desired format
+        //    byte[] dFormatted = new byte[64];  // For example, use 64 bytes
+        //    dFormatted[0] = dBytes[0];
 
-            // Export private key
-            RSAParameters privateKeyParams = rsa.ExportParameters(true);
-            using (TextWriter writer = new StreamWriter("privatekey.xml"))
-            {
-                serializer.Serialize(writer, privateKeyParams);
-            }
-        }
+        //    for (int i = 1; i < dFormatted.Length; i++)
+        //    {
+        //        dFormatted[i] = 0;
+        //    }
+
+        //    // Set the first byte to 0x00 (if necessary)
+        //    if (dFormatted[0] > 0x7F)
+        //    {
+        //        byte[] temp = new byte[dFormatted.Length + 1];
+        //        Array.Copy(dFormatted, 0, temp, 1, dFormatted.Length);
+        //        dFormatted = temp;
+        //    }
+
+        //    // Set the second byte to 0x02 (for a positive integer)
+        //    dFormatted[1] = 0x02;
+
+        //    // Set the third byte to the length of the value (in bytes)
+        //    dFormatted[2] = (byte)dBytes.Length;
+
+        //    // Copy the value bytes to the end of the array
+        //    Array.Copy(dBytes, 0, dFormatted, dFormatted.Length - dBytes.Length, dBytes.Length);
+
+        //    // Convert N to a byte array
+        //    byte[] nBytes = N.ToByteArray();
+
+        //    // Create a new byte array with the desired format
+        //    byte[] nFormatted = new byte[64];  // For example, use 64 bytes
+
+        //    nFormatted[0] = nBytes[0];
+        //    for (int i = 1; i < nFormatted.Length; i++)
+        //    {
+        //        nFormatted[i] = 0;
+        //    }
+
+        //    // Set the first byte to 0x00 (if necessary)
+        //    if (nFormatted[0] > 0x7F)
+        //    {
+        //        byte[] temp = new byte[nFormatted.Length + 1];
+        //        Array.Copy(nFormatted, 0, temp, 1, nFormatted.Length);
+        //        nFormatted = temp;
+        //    }
+
+        //    // Set the second byte to 0x02 (for a positive integer)
+        //    nFormatted[1] = 0x02;
+
+        //    // Set the third byte to the length of the value (in bytes)
+        //    nFormatted[2] = (byte)nBytes.Length;
+
+        //    // Copy the value bytes to the end of the array
+        //    Array.Copy(nBytes, 0, nFormatted, nFormatted.Length - nBytes.Length, nBytes.Length);
+
+
+        //    // Create a new RSA instance with custom parameters
+        //    var rsa = new RSACryptoServiceProvider();
+        //    var rsaParams = new RSAParameters
+        //    {
+        //        P = p,
+        //        Q = q,
+        //        Exponent = e,
+        //        D = dFormatted,
+        //        Modulus = nFormatted
+        //    };
+        //    rsa.ImportParameters(rsaParams);
+
+        //    // Export public key
+        //    RSAParameters publicKeyParams = rsa.ExportParameters(false);
+        //    XmlSerializer serializer = new XmlSerializer(typeof(RSAParameters));
+        //    using (TextWriter writer = new StreamWriter("publickey.xml"))
+        //    {
+        //        serializer.Serialize(writer, publicKeyParams);
+        //    }
+
+        //    // Export private key
+        //    RSAParameters privateKeyParams = rsa.ExportParameters(true);
+        //    using (TextWriter writer = new StreamWriter("privatekey.xml"))
+        //    {
+        //        serializer.Serialize(writer, privateKeyParams);
+        //    }
+        //}
 
 
 
@@ -158,7 +157,7 @@ namespace Customer
         {
             RSAEncryption rsa = new();
 
-            string amount = "100";
+            string amount = "hello";
 
             // declare the path to the private key and load it in
             string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\publickey.xml";
@@ -180,28 +179,26 @@ namespace Customer
 
             MessageBox.Show(signedData, "Signed");
 
-            string unblindedSigned = rsa.Unblind(new BigInteger(Encoding.UTF8.GetBytes(signedData)));
+            string unblindedSigned = rsa.unblind(new BigInteger(Encoding.UTF8.GetBytes(signedData)));
             MessageBox.Show(unblindedSigned, "Signed-Unblinded");
 
             byte[] revealedUnblinded = rsa.reveal(new BigInteger(Encoding.UTF8.GetBytes(unblindedSigned)));
-            BigInteger revealed = new BigInteger(revealedUnblinded);
-            MessageBox.Show(revealed.ToString(), "Revealed");
+            MessageBox.Show(Encoding.UTF8.GetString(revealedUnblinded), "Revealed");
 
             byte[] temp = rsa.PrivateDecryption(revealedUnblinded);
-            BigInteger tempFinal = new BigInteger(temp);
-            MessageBox.Show(tempFinal.ToString(), "End");
+            MessageBox.Show(Encoding.UTF8.GetString(temp), "End");
 
-            BigInteger blindNum = BigInteger.Parse(blind);
+            BigInteger blindNum = new BigInteger(long.Parse(blind));
             rsa.setBlindFactor(blindNum);
 
-            BigInteger blindAmount = BigInteger.Parse(blindEncAmount);
-            string unblindAmount = rsa.Unblind(blindAmount);
+            BigInteger blindAmount = new BigInteger(long.Parse(blindEncAmount));
+            string unblindAmount = rsa.unblind(blindAmount);
 
 
             byte[] decryptedAmount = rsa.PrivateDecryption(Encoding.UTF8.GetBytes(blindEncAmount));
             BigInteger decrypted = new BigInteger(decryptedAmount);
             MessageBox.Show(unblindAmount, "Blind-Unblind");
-            MessageBox.Show(decrypted.ToString(), "Blind-Decrypt");
+            MessageBox.Show(Encoding.UTF8.GetString(decryptedAmount), "Blind-Decrypt");
         }
 
         private void DecryptBtn_Click(object sender, EventArgs e)
@@ -307,36 +304,5 @@ namespace Customer
             //ManualKey();
             MessageBox.Show("New key generated.");
         }
-
-
-
-
-
-
-
-
-
-
-
-        //// Archived code
-        //// Encrypt button
-        //RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-
-        //string publicKey = File.ReadAllText("publickey");
-        //rsa.FromXmlString(publicKey);
-        //    byte[] cipherText = rsa.Encrypt(Encoding.UTF8.GetBytes(inputTxtBx.Text), false);
-        //encryptLbl.Text = Encoding.UTF8.GetString(cipherText);
-
-        //// Decrypt Button
-        //RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-
-        //string publicKey = File.ReadAllText("publickey");
-        //rsa.FromXmlString(publicKey);
-        //    byte[] cipherText = rsa.Encrypt(Encoding.UTF8.GetBytes(inputTxtBx.Text), false);
-
-        //string privateKey = File.ReadAllText("privatekey");
-        //rsa.FromXmlString(privateKey);
-        //    byte[] decryptedText = rsa.Decrypt(cipherText, false);
-        //decryptLbl.Text = Encoding.UTF8.GetString(decryptedText);
     }
 }

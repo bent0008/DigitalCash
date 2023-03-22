@@ -3,7 +3,6 @@ using System.IO;
 using System.Security;
 using System.Security.Cryptography;
 using System.Xml;
-using System.Numerics;
 
 namespace Customer
 {
@@ -11,12 +10,12 @@ namespace Customer
     {
         // Members:
         // RSA Key components (just the three I'm using, there is more...)
-        private BigInteger D = new BigInteger();
-        private BigInteger Exponent = new BigInteger();
-        private BigInteger Modulus = new BigInteger();
-        private BigInteger blind = new BigInteger();
-        private BigInteger enBlind = new BigInteger();
-        private BigInteger invblind = new BigInteger();
+        private BigInteger D = null;
+        private BigInteger Exponent = null;
+        private BigInteger Modulus = null;
+        private BigInteger blind = null;
+        private BigInteger enBlind = null;
+        private BigInteger invblind = null;
 
         // .NET RSA class, for loading and creating key pairs
         private RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
@@ -43,8 +42,8 @@ namespace Customer
             {
                 rsa.FromXmlString(File.ReadAllText(publicPath));
                 RSAParameters rsaParams = rsa.ExportParameters(false);
-                Exponent = new BigInteger(rsaParams.Exponent);
                 Modulus = new BigInteger(rsaParams.Modulus);
+                Exponent = new BigInteger(rsaParams.Exponent);
                 isPublicKeyLoaded = true;
                 isPrivateKeyLoaded = false;
             }
@@ -80,7 +79,6 @@ namespace Customer
                 rsa.FromXmlString(File.ReadAllText(privatePath));
                 RSAParameters rsaParams = rsa.ExportParameters(true);
                 D = new BigInteger(rsaParams.D);  // This parameter is only for private key
-                MessageBox.Show(D.ToString(), "D");
                 Exponent = new BigInteger(rsaParams.Exponent);
                 Modulus = new BigInteger(rsaParams.Modulus);
                 isPrivateKeyLoaded = true;
@@ -104,8 +102,8 @@ namespace Customer
             BigInteger bnData = new BigInteger(data);
 
             // (bnData ^ D) % Modulus - This Encrypt the data using the private Exponent: D
-            BigInteger encData = BigInteger.ModPow(bnData, D, Modulus);
-            return encData.ToByteArray();
+            BigInteger encData = bnData.modPow(D, Modulus);
+            return encData.getBytes();
         }
 
         // Encrypt data using public key
@@ -119,9 +117,9 @@ namespace Customer
             BigInteger bnData = new BigInteger(data);
 
             // (bnData ^ Exponent) % Modulus - This Encrypt the data using the public Exponent
-            BigInteger encData = BigInteger.ModPow(bnData, Exponent, Modulus);
+            BigInteger encData = bnData.modPow(Exponent, Modulus);
 
-            return encData.ToByteArray();
+            return encData.getBytes();
 
         }
 
@@ -133,7 +131,7 @@ namespace Customer
             blind = rnd.Next(1000000, 2100000000);//finding a blind factor
             while (done != true)//finding a blind factor
             {
-                if (BigInteger.GreatestCommonDivisor(Modulus, blind) == 1) done = true;//finding a blind factor
+                if (Modulus.gcd(blind) == 1) done = true;//finding a blind factor
                 else blind = rnd.Next(1000000, 2100000000);//finding a blind factor
 
             }
@@ -164,7 +162,7 @@ namespace Customer
             BigInteger bnData = new BigInteger(data);
 
 
-            enBlind = BigInteger.ModPow(blind, Exponent, Modulus); //encrypting the blind factor
+            enBlind = blind.modPow(Exponent, Modulus); //encrypting the blind factor
             BigInteger encBlindData = enBlind * bnData; //blinding the message with encrypted blindfactor
 
             //return encBlindData.getBytes();
@@ -177,54 +175,9 @@ namespace Customer
             //BigInteger bnData = new BigInteger(data);   // Converting the byte array data into a BigInteger instance
             BigInteger bnData = data;
             BigInteger signeddata;
-            signeddata = BigInteger.ModPow(bnData, D, Modulus);    // Signning the blinded message
+            signeddata = bnData.modPow(D, Modulus);    // Signning the blinded message
             //return signeddata.getBytes();
             return signeddata.ToString();
-        }
-
-        public static BigInteger Egcd(BigInteger left,
-                              BigInteger right,
-                          out BigInteger leftFactor,
-                          out BigInteger rightFactor)
-        {
-            leftFactor = 0;
-            rightFactor = 1;
-            BigInteger u = 1;
-            BigInteger v = 0;
-            BigInteger gcd = 0;
-
-            while (left != 0)
-            {
-                BigInteger q = right / left;
-                BigInteger r = right % left;
-
-                BigInteger m = leftFactor - u * q;
-                BigInteger n = rightFactor - v * q;
-
-                right = left;
-                left = r;
-                leftFactor = u;
-                rightFactor = v;
-                u = m;
-                v = n;
-
-                gcd = right;
-            }
-
-            return gcd;
-        }
-
-        public static BigInteger ModInverse(BigInteger value, BigInteger modulo)
-        {
-            BigInteger x, y;
-
-            if (1 != Egcd(value, modulo, out x, out y))
-                throw new ArgumentException("Invalid modulo", nameof(modulo));
-
-            if (x < 0)
-                x += modulo;
-
-            return x % modulo;
         }
 
 
@@ -241,13 +194,13 @@ namespace Customer
             BigInteger encData = new BigInteger(encryptedData);
 
             // (encData ^ D) % Modulus - This Decrypt the data using the private Exponent: D
-            BigInteger bnData = BigInteger.ModPow(encData, D, Modulus);
-            //BigInteger inverseb = ModInverse(blind, Modulus);
-            return bnData.ToByteArray();
+            BigInteger bnData = encData.modPow(D, Modulus);
+            BigInteger inverseb = blind.modInverse(Modulus);
+            return bnData.getBytes();
         }
 
 
-        public string Unblind(BigInteger data)
+        public string unblind(BigInteger data)
         //public byte[] unblind(byte[] data)
         {
 
@@ -255,8 +208,7 @@ namespace Customer
             //BigInteger bnData = new BigInteger(data);
             BigInteger bnData = data;
             BigInteger unBlindedData;
-            BigInteger invblind = ModInverse(blind, Modulus);   // Finding the inverse of blind factor
-            //BigInteger invBlind = BigInteger.ModPow(blind, Modulus - 2, Modulus);
+            invblind = blind.modInverse(Modulus);   // Finding the invese of blind factor
             unBlindedData = invblind * bnData;      // Unblinding the signed message
             //return unBlindedData.getBytes();
             return unBlindedData.ToString();
@@ -268,10 +220,19 @@ namespace Customer
             //BigInteger bnData = new BigInteger(data);
             BigInteger bnData = data;
             BigInteger revealedData;
-            revealedData = BigInteger.ModPow(bnData, Exponent, Modulus);   // Decrypting the singed message
-            return revealedData.ToByteArray();
+            revealedData = bnData.modPow(Exponent, Modulus);   // Decrypting the singed message
+            return revealedData.getBytes();
 
         }
+
+
+
+
+
+
+
+
+
 
         // Decrypt data using public key (for data encrypted with private key)
         public byte[] PublicDecryption(byte[] encryptedData)
@@ -284,8 +245,8 @@ namespace Customer
             BigInteger encData = new BigInteger(encryptedData);
 
             // (encData ^ Exponent) % Modulus - This Decrypt the data using the public Exponent
-            BigInteger bnData = BigInteger.ModPow(encData, Exponent, Modulus);
-            return bnData.ToByteArray();
+            BigInteger bnData = encData.modPow(Exponent, Modulus);
+            return bnData.getBytes();
         }
 
         // Implementation of IDisposable interface,
@@ -293,16 +254,6 @@ namespace Customer
         public void Dispose()
         {
             rsa.Clear();
-        }
-
-        public string PrintExponent()
-        {
-            return Exponent.ToString();
-        }
-
-        public string PrintModulus()
-        {
-            return Modulus.ToString();
         }
     }
 }
