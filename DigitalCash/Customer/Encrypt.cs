@@ -27,7 +27,7 @@ namespace Customer
         private void CreateKey()
         {
             // Generate RSA key pair
-            using RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(2048);
+            using RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(512);
 
             // Export public key to file
             string publicKeyFile = "publickey.xml";
@@ -167,37 +167,37 @@ namespace Customer
             rsa.createBlindFactor();
             // Encrypt the blind factor with the public key and multiply it by the data
             string blindEncAmount = rsa.PublicBlindEncryption(Encoding.UTF8.GetBytes(amount));
+            MessageBox.Show(blindEncAmount, "Blinded Amount");
 
             string blind = rsa.retrieveBlindFactor();
-
-            MessageBox.Show(blindEncAmount, "Blinded Amount");
+            BigInteger blindNum = new BigInteger(Encoding.UTF8.GetBytes(blind));
+            rsa.setBlindFactor(blindNum);
 
             string privatePath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\privatekey.xml";
             rsa.LoadPrivateFromXml(privatePath);
+
+            byte[] temp = rsa.PrivateDecryption(Encoding.UTF8.GetBytes(blindEncAmount));
+            MessageBox.Show(Encoding.UTF8.GetString(temp), "Blind-Decrypted");
+
+            string unblindedSigned = rsa.unblind(new BigInteger(temp));
+            MessageBox.Show(unblindedSigned, "Blind-Decrypted-Unblinded");
 
             string signedData = rsa.Sign(new BigInteger(Encoding.UTF8.GetBytes(blindEncAmount)));
 
             MessageBox.Show(signedData, "Signed");
 
-            string unblindedSigned = rsa.unblind(new BigInteger(Encoding.UTF8.GetBytes(signedData)));
-            MessageBox.Show(unblindedSigned, "Signed-Unblinded");
-
             byte[] revealedUnblinded = rsa.reveal(new BigInteger(Encoding.UTF8.GetBytes(unblindedSigned)));
             MessageBox.Show(Encoding.UTF8.GetString(revealedUnblinded), "Revealed");
 
-            byte[] temp = rsa.PrivateDecryption(revealedUnblinded);
-            MessageBox.Show(Encoding.UTF8.GetString(temp), "End");
 
-            BigInteger blindNum = new BigInteger(long.Parse(blind));
-            rsa.setBlindFactor(blindNum);
-
-            BigInteger blindAmount = new BigInteger(long.Parse(blindEncAmount));
+            BigInteger blindAmount = new BigInteger(Encoding.UTF8.GetBytes(blindEncAmount));
             string unblindAmount = rsa.unblind(blindAmount);
-
+            string decAmo = Encoding.UTF8.GetString(rsa.PrivateDecryption(Encoding.UTF8.GetBytes(unblindAmount)));
 
             byte[] decryptedAmount = rsa.PrivateDecryption(Encoding.UTF8.GetBytes(blindEncAmount));
             BigInteger decrypted = new BigInteger(decryptedAmount);
             MessageBox.Show(unblindAmount, "Blind-Unblind");
+            MessageBox.Show(decAmo, "Blind-Unblind-Decrypted");
             MessageBox.Show(Encoding.UTF8.GetString(decryptedAmount), "Blind-Decrypt");
         }
 
@@ -208,19 +208,18 @@ namespace Customer
             string amount = "Hello";
 
             // declare the path to the private key and load it in
-            string privatePath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\privatekey.xml";
-            rsa.LoadPrivateFromXml(privatePath);
-
-            byte[] encryptedAmount = rsa.PrivateEncryption(Encoding.UTF8.GetBytes(amount));
-            BigInteger encrypt = new BigInteger();
-            MessageBox.Show(encrypt.ToString(), "Encrypted");
-
             string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\publickey.xml";
             rsa.LoadPublicFromXml(publicPath);
 
-            byte[] decryptedAmount = rsa.PublicDecryption(encryptedAmount);
-            BigInteger decrypt = new BigInteger();
-            MessageBox.Show(decrypt.ToString(), "Decrypted");
+            byte[] encryptedAmount = rsa.PublicEncryption(Encoding.UTF8.GetBytes(amount));
+            MessageBox.Show(Encoding.UTF8.GetString(encryptedAmount), "Encrypted");
+
+            string privatePath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\privatekey.xml";
+            rsa.LoadPrivateFromXml(privatePath);
+
+            byte[] decryptedAmount = rsa.PrivateDecryption(encryptedAmount);
+            BigInteger decrypt = new BigInteger(decryptedAmount);
+            MessageBox.Show(Encoding.UTF8.GetString(decryptedAmount));
         }
 
         private void TestBtn_Click(object sender, EventArgs e)
@@ -236,36 +235,9 @@ namespace Customer
             string privatePath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\privatekey.xml";
             rsa.LoadPrivateFromXml(privatePath);
             byte[] decryptedText = rsa.PrivateDecryption(cipherText);
-            BigInteger finalText = new BigInteger(decryptedText);
-            MessageBox.Show(finalText.ToString());
+            MessageBox.Show(Encoding.UTF8.GetString(decryptedText));
         }
 
-
-        private void ClassBtn_Click(object sender, EventArgs e)
-        {
-            // Create an instance of the RSACryptoServiceProvider class with a key size of 2048 bits
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-
-            // Get the public and private keys in XML format
-            string publicKeyXml = rsa.ToXmlString(false);
-            string privateKeyXml = rsa.ToXmlString(true);
-
-            // Convert a plaintext message to a byte array
-            string plaintext = "100";
-            byte[] plaintextBytes = System.Text.Encoding.UTF8.GetBytes(plaintext);
-
-            // Encrypt the plaintext using the public key
-            byte[] ciphertextBytes = rsa.Encrypt(plaintextBytes, false);
-            string cipherText = System.Text.Encoding.UTF8.GetString(ciphertextBytes);
-            MessageBox.Show(cipherText);
-
-            // Decrypt the ciphertext using the private key
-            byte[] decryptedBytes = rsa.Decrypt(ciphertextBytes, false);
-
-            // Convert the decrypted bytes back to a string
-            string decryptedText = System.Text.Encoding.UTF8.GetString(decryptedBytes);
-            MessageBox.Show(decryptedText.ToString());
-        }
 
         private void BasicBtn_Click(object sender, EventArgs e)
         {

@@ -34,7 +34,6 @@
             this.decryptLbl = new System.Windows.Forms.Label();
             this.GenKeysBtn = new System.Windows.Forms.Button();
             this.TestBtn = new System.Windows.Forms.Button();
-            this.ClassBtn = new System.Windows.Forms.Button();
             this.BasicBtn = new System.Windows.Forms.Button();
             this.NewBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
@@ -95,16 +94,6 @@
             this.TestBtn.UseVisualStyleBackColor = true;
             this.TestBtn.Click += new System.EventHandler(this.TestBtn_Click);
             // 
-            // ClassBtn
-            // 
-            this.ClassBtn.Location = new System.Drawing.Point(187, 293);
-            this.ClassBtn.Name = "ClassBtn";
-            this.ClassBtn.Size = new System.Drawing.Size(75, 23);
-            this.ClassBtn.TabIndex = 7;
-            this.ClassBtn.Text = "Class";
-            this.ClassBtn.UseVisualStyleBackColor = true;
-            this.ClassBtn.Click += new System.EventHandler(this.ClassBtn_Click);
-            // 
             // BasicBtn
             // 
             this.BasicBtn.Location = new System.Drawing.Point(205, 77);
@@ -132,7 +121,6 @@
             this.ClientSize = new System.Drawing.Size(800, 450);
             this.Controls.Add(this.NewBtn);
             this.Controls.Add(this.BasicBtn);
-            this.Controls.Add(this.ClassBtn);
             this.Controls.Add(this.TestBtn);
             this.Controls.Add(this.GenKeysBtn);
             this.Controls.Add(this.decryptLbl);
@@ -153,7 +141,6 @@
         private Label decryptLbl;
         private Button GenKeysBtn;
         private Button TestBtn;
-        private Button ClassBtn;
         private Button BasicBtn;
         private Button NewBtn;
     }
