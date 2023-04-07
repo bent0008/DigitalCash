@@ -61,14 +61,21 @@ namespace Customer
             comm.ExecuteNonQuery();
 
             // delete previous CipherMoneyOrder table elements
-            string deleteCipherQuery = "DELETE FROM [dbo].[MoneyOrder]";
+            string deleteCipherQuery = "DELETE FROM [dbo].[CipherMoneyOrder]";
             SqlCommand comm2 = new SqlCommand(deleteCipherQuery, con);
             comm2.ExecuteNonQuery();
 
+            // delete previous ArchivedBlinds table elements
+            string deleteBlindsQuery = "DELETE FROM [dbo].[ArchivedBlinds]";
+            SqlCommand comm3 = new SqlCommand(deleteBlindsQuery, con);
+            comm3.ExecuteNonQuery();
+
             // load in the customers information
             CustomerForm cust = new();
+            int balance = CustomerForm.SelectedCustomer.Balance;
+
             // check if the customer has enough money in their balance to make the order
-            if (cust.Balance < int.Parse(amount))
+            if (balance < int.Parse(amount))
             {
                 MessageBox.Show("Not enough available funds.", "Error");
             }
@@ -82,21 +89,21 @@ namespace Customer
 
                     // create a random number to be the left and the XOR for the right
                     int left = rand.Next(101, int.MaxValue);
-                    int right = cust.ID ^ left;
+                    int right = CustomerForm.SelectedCustomer.ID ^ left;
 
                     // create a plaintext money order
                     string plainQuery = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
-                    SqlCommand plainCmd = new SqlCommand(plainQuery, con);
+                    using SqlCommand plainCmd = new SqlCommand(plainQuery, con);
+                    {
+                        // Insert them to MoneyOrder
+                        plainCmd.Parameters.AddWithValue("@index", i);
+                        plainCmd.Parameters.AddWithValue("@moneyAmount", amount);
+                        plainCmd.Parameters.AddWithValue("@serialNumber", serialNum);
+                        plainCmd.Parameters.AddWithValue("@leftNumber", left);
+                        plainCmd.Parameters.AddWithValue("@rightNumber", right);
 
-                    // Insert them to MoneyOrder
-                    plainCmd.Parameters.AddWithValue("@index", i);
-                    plainCmd.Parameters.AddWithValue("@moneyAmount", amount);
-                    plainCmd.Parameters.AddWithValue("@serialNumber", serialNum);
-                    plainCmd.Parameters.AddWithValue("@leftNumber", left);
-                    plainCmd.Parameters.AddWithValue("@rightNumber", right);
-
-                    plainCmd.ExecuteNonQuery();
-
+                        plainCmd.ExecuteNonQuery();
+                    }
 
                     // call the RSAEncryption class to use its functions
                     RSAEncryption rsa = new();
@@ -123,20 +130,21 @@ namespace Customer
 
                     // Create command for ArchivedBlinds
                     string blindQuery = "INSERT INTO [dbo].[ArchivedBlinds]([index],[serialNumber],[blind]) VALUES(@index,@serialNumber,@blind)";
-                    SqlCommand cmdBlind = new SqlCommand(blindQuery, con);
+                    using SqlCommand cmdBlind = new SqlCommand(blindQuery, con);
+                    {
+                        // Add data to ArchivedBlinds
+                        cmdBlind.Parameters.AddWithValue("@index", i);
+                        cmdBlind.Parameters.AddWithValue("@serialNumber", serialNum);
+                        cmdBlind.Parameters.AddWithValue("@blind", blind);
 
-                    // Add data to ArchivedBlinds
-                    cmdBlind.Parameters.AddWithValue("@index", i);
-                    cmdBlind.Parameters.AddWithValue("@serialNumber", cipherSerial);
-                    cmdBlind.Parameters.AddWithValue("@blind", blind);
-
-                    cmdBlind.ExecuteNonQuery();
+                        cmdBlind.ExecuteNonQuery();
+                    }
 
                     // create the left and right hash to be changed
                     string leftHash, rightHash;
 
                     // hash the left and right numbers
-                    using (SHA256 sha256 = SHA256Managed.Create())
+                    using (SHA256 sha256 = SHA256.Create())
                     {
                         byte[] leftBytes = Encoding.UTF8.GetBytes(left.ToString());
                         byte[] computedLeftHash = sha256.ComputeHash(leftBytes);
@@ -149,29 +157,31 @@ namespace Customer
 
                     // add these to CipherMoneyOrder
                     string query = "INSERT INTO [dbo].[CipherMoneyOrder]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
-                    SqlCommand cmd = new SqlCommand(query, con);
+                    using SqlCommand cmd = new SqlCommand(query, con);
+                    {
+                        // Insert them to MoneyOrder
+                        cmd.Parameters.AddWithValue("@index", i);
+                        cmd.Parameters.AddWithValue("@moneyAmount", cipherAmount);
+                        cmd.Parameters.AddWithValue("@serialNumber", cipherSerial);
+                        cmd.Parameters.AddWithValue("@leftNumber", leftHash);
+                        cmd.Parameters.AddWithValue("@rightNumber", rightHash);
 
-                    // Insert them to MoneyOrder
-                    cmd.Parameters.AddWithValue("@index", i);
-                    cmd.Parameters.AddWithValue("@moneyAmount", cipherAmount);
-                    cmd.Parameters.AddWithValue("@serialNumber", cipherSerial);
-                    cmd.Parameters.AddWithValue("@leftNumber", leftHash);
-                    cmd.Parameters.AddWithValue("@rightNumber", rightHash);
-
-                    cmd.ExecuteNonQuery();
+                        cmd.ExecuteNonQuery();
+                    }
 
                     // add these to ArchivedOrders
                     string archivedQuery = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
-                    SqlCommand cmd2 = new SqlCommand(archivedQuery, con);
+                    using SqlCommand cmd2 = new SqlCommand(archivedQuery, con);
+                    {
+                        // Insert them to ArchivedOrders
+                        cmd2.Parameters.AddWithValue("@index", i);
+                        cmd2.Parameters.AddWithValue("@moneyAmount", cipherAmount);
+                        cmd2.Parameters.AddWithValue("@serialNumber", cipherSerial);
+                        cmd2.Parameters.AddWithValue("@leftNumber", left);
+                        cmd2.Parameters.AddWithValue("@rightNumber", right);
 
-                    // Insert them to ArchivedOrders
-                    cmd2.Parameters.AddWithValue("@index", i);
-                    cmd2.Parameters.AddWithValue("@moneyAmount", cipherAmount);
-                    cmd2.Parameters.AddWithValue("@serialNumber", cipherSerial);
-                    cmd.Parameters.AddWithValue("@leftNumber", leftHash);
-                    cmd.Parameters.AddWithValue("@rightNumber", rightHash);
-
-                    cmd2.ExecuteNonQuery();
+                        cmd2.ExecuteNonQuery();
+                    }
                 }
             }
             this.Close();
@@ -291,7 +301,7 @@ namespace Customer
                         string leftHash, rightHash;
 
                         // hash the left and right numbers
-                        using (SHA256 sha256 = SHA256Managed.Create())
+                        using (SHA256 sha256 = SHA256.Create())
                         {
                             byte[] leftBytes = Encoding.UTF8.GetBytes(left.ToString());
                             byte[] computedLeftHash = sha256.ComputeHash(leftBytes);
@@ -357,7 +367,7 @@ namespace Customer
                         string leftHash, rightHash;
 
                         // hash the left and right numbers
-                        using (SHA256 sha256 = SHA256Managed.Create())
+                        using (SHA256 sha256 = SHA256.Create())
                         {
                             byte[] leftBytes = Encoding.UTF8.GetBytes(left.ToString());
                             byte[] computedLeftHash = sha256.ComputeHash(leftBytes);

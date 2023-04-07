@@ -6,6 +6,7 @@ using System.Data.SqlClient;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -30,7 +31,19 @@ namespace Bank
             string username = customerNameTxtbx.Text;
             string password = customerPwdTxtbx.Text;
             string balance = customerBalanceTxtbx.Text;
+            string hashedPassword;
 
+            // create a random ID for the customer
+            Random rand = new();
+            int idNumber = rand.Next(100000000, 999999999);
+
+            // hash the password
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+                byte[] computedPasswordHash = sha256.ComputeHash(passwordBytes);
+                hashedPassword = Convert.ToBase64String(computedPasswordHash);
+            }
 
             if (string.IsNullOrEmpty(username))
             {
@@ -59,13 +72,14 @@ namespace Bank
             else
             {
                 // add these to db
-                string query = "INSERT INTO [dbo].[LoginCredentials]([username],[password],[balance]) VALUES(@username,@password,@balance)";
+                string query = "INSERT INTO [dbo].[LoginCredentials]([username],[password],[balance],[ID]) VALUES(@username,@password,@balance,@ID)";
                 SqlCommand cmd = new SqlCommand(query, con);
 
                 // Insert them
                 cmd.Parameters.AddWithValue("@username", username);
-                cmd.Parameters.AddWithValue("@password", password);
+                cmd.Parameters.AddWithValue("@password", hashedPassword);
                 cmd.Parameters.AddWithValue("@balance", balance);
+                cmd.Parameters.AddWithValue("@ID", idNumber);
 
                 cmd.ExecuteNonQuery();
 

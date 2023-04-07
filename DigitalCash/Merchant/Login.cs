@@ -6,6 +6,7 @@ using System.Data;
 using System.Drawing;
 using System.Linq;
 using System.Text;
+using System.Security.Cryptography;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using System.Data.SqlClient;
@@ -33,13 +34,22 @@ namespace Merchant
             string username = usernameTxtbx.Text;
             string password = passwordTxtbx.Text;
             int dbBalance = 0;
+            string hashedPassword;
+
+            // hash the password to check with database
+            using (SHA256 sha256 = SHA256.Create())
+            {
+                byte[] passwordBytes = Encoding.UTF8.GetBytes(password);
+                byte[] computedPasswordHash = sha256.ComputeHash(passwordBytes);
+                hashedPassword = Convert.ToBase64String(computedPasswordHash);
+            }
 
             string query = "SELECT [balance] FROM LoginCredentials WHERE username = @username AND password = @password";
 
             SqlCommand cmd = new SqlCommand(query, con);
 
             cmd.Parameters.AddWithValue("@username", username);
-            cmd.Parameters.AddWithValue("@password", password);
+            cmd.Parameters.AddWithValue("@password", hashedPassword);
 
             using (SqlDataReader reader = cmd.ExecuteReader())
             {

@@ -37,6 +37,7 @@
             this.itemHeader = new System.Windows.Forms.ColumnHeader();
             this.priceHeader = new System.Windows.Forms.ColumnHeader();
             this.BuyBtn = new System.Windows.Forms.Button();
+            this.RevealBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // CustomerLoginBtn
@@ -120,11 +121,22 @@
             this.BuyBtn.UseVisualStyleBackColor = true;
             this.BuyBtn.Click += new System.EventHandler(this.BuyBtn_Click);
             // 
+            // RevealBtn
+            // 
+            this.RevealBtn.Location = new System.Drawing.Point(155, 184);
+            this.RevealBtn.Name = "RevealBtn";
+            this.RevealBtn.Size = new System.Drawing.Size(101, 23);
+            this.RevealBtn.TabIndex = 7;
+            this.RevealBtn.Text = "Reveal Order";
+            this.RevealBtn.UseVisualStyleBackColor = true;
+            this.RevealBtn.Click += new System.EventHandler(this.RevealBtn_Click);
+            // 
             // Merchant
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.RevealBtn);
             this.Controls.Add(this.BuyBtn);
             this.Controls.Add(this.itemList);
             this.Controls.Add(this.balanceAmountLbl);
@@ -151,5 +163,6 @@
         private ColumnHeader itemHeader;
         private ColumnHeader priceHeader;
         private Button BuyBtn;
+        private Button RevealBtn;
     }
 }

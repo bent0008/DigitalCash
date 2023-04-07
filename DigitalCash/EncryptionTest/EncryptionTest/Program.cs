@@ -26,9 +26,6 @@ namespace EncryptionTest
             Console.WriteLine("Encryption: ");
             Encryption();
 
-            Console.Write("\nCreate XOR: \n");
-            CreateXOR();
-
             Console.ReadKey();
         }
 
@@ -95,10 +92,10 @@ namespace EncryptionTest
         {
             RSAEncryption rsa = new();
 
-            string amount = "hello";
+            string amount = "100";
 
             // declare the path to the public key and load it in
-            string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\bin\Debug\net7.0\publickey.xml";
+            string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Bank\bin\Debug\net7.0-windows\publickey.xml";
             rsa.LoadPublicFromXml(publicPath);
 
             // Create the blind factor
@@ -116,7 +113,7 @@ namespace EncryptionTest
             Console.WriteLine("Blind Encrypted Amount: " + blindEncAmount);
 
 
-            string privatePath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\bin\Debug\net7.0\privatekey.xml";
+            string privatePath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Bank\bin\Debug\net7.0-windows\privatekey.xml";
             rsa.LoadPrivateFromXml(privatePath);
 
             string signedData = rsa.Sign(ConvertToBigInt(blindEncAmount));

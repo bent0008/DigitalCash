@@ -15,7 +15,6 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Reflection;
 using System.Security.Cryptography;
-using Bank;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace Merchant
@@ -101,7 +100,7 @@ namespace Merchant
 
         private void BuyBtn_Click(object sender, EventArgs e)
         {
-            RSAEncryption rsaEnc = new RSAEncryption();
+            RSAEncryption rsa = new RSAEncryption();
 
             if (LoggedIn)
             {
@@ -153,8 +152,8 @@ namespace Merchant
                     }
                     reader.Close();
                     // convert the data to bigints
-                    BigInteger encAmount = BigInteger.Parse(encryptedAmount);
-                    BigInteger serialNumber = BigInteger.Parse(serialNumberString);
+                    BigInteger encAmount = rsa.ConvertToBigInt(encryptedAmount);
+                    BigInteger serialNumber = rsa.ConvertToBigInt(serialNumberString);
 
                     int amount = Convert.ToInt32(amountString);
 
@@ -218,6 +217,47 @@ namespace Merchant
             {
                 MessageBox.Show("Please log in.", "Error");
             }
+        }
+
+        private void RevealBtn_Click(object sender, EventArgs e)
+        {
+            // Call the RSAEncryption class
+            RSAEncryption rsa = new RSAEncryption();
+
+            SqlConnection con = new SqlConnection(connectionString);
+            con.Open();
+
+            // get the selection from the table
+            string query = "SELECT * FROM [dbo].[UnblindedSelection]";
+
+            using SqlCommand cmd = new SqlCommand(query, con);
+            using SqlDataReader reader = cmd.ExecuteReader();
+
+            int index = 0;
+            string amountString = "";
+            string serialNumberString = "";
+            string left = "";
+            string right = "";
+
+            while (reader.Read())
+            {
+                index = reader.GetInt32(0);
+                amountString = reader.GetString(1);
+                serialNumberString = reader.GetString(2);
+                left = reader.GetString(3);
+                right = reader.GetString(4);
+            }
+            reader.Close();
+
+
+            // declare the path to the public key and load it in
+            string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Merchant\bin\Debug\net7.0-windows\publickey.xml";
+            rsa.LoadPublicFromXml(publicPath);
+
+            byte[] amount = rsa.reveal(rsa.ConvertToBigInt(amountString));
+            byte[] serialNumber = rsa.reveal(rsa.ConvertToBigInt(serialNumberString));
+
+            MessageBox.Show($"Amount: {Encoding.UTF8.GetString(amount)}\nSerial Number: {Encoding.UTF8.GetString(serialNumber)}");
         }
     }
 }

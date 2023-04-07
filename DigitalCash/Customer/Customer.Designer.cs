@@ -35,6 +35,7 @@
             this.usernameLbl = new System.Windows.Forms.Label();
             this.balanceLbl = new System.Windows.Forms.Label();
             this.userLbl = new System.Windows.Forms.Label();
+            this.UnblindBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // moneyOrderBtn
@@ -105,11 +106,22 @@
             this.userLbl.TabIndex = 9;
             this.userLbl.Text = "User:                        ";
             // 
+            // UnblindBtn
+            // 
+            this.UnblindBtn.Location = new System.Drawing.Point(286, 253);
+            this.UnblindBtn.Name = "UnblindBtn";
+            this.UnblindBtn.Size = new System.Drawing.Size(94, 23);
+            this.UnblindBtn.TabIndex = 13;
+            this.UnblindBtn.Text = "Unblind Order";
+            this.UnblindBtn.UseVisualStyleBackColor = true;
+            this.UnblindBtn.Click += new System.EventHandler(this.UnblindBtn_Click);
+            // 
             // CustomerForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(630, 415);
+            this.Controls.Add(this.UnblindBtn);
             this.Controls.Add(this.balanceAmountLbl);
             this.Controls.Add(this.usernameLbl);
             this.Controls.Add(this.balanceLbl);
@@ -132,5 +144,6 @@
         private Label usernameLbl;
         private Label balanceLbl;
         private Label userLbl;
+        private Button UnblindBtn;
     }
 }

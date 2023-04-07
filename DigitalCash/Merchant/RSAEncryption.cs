@@ -3,20 +3,19 @@ using System.IO;
 using System.Security;
 using System.Security.Cryptography;
 using System.Xml;
-using System.Numerics;
 
-namespace Bank
+namespace Merchant
 {
     public class RSAEncryption : IDisposable
     {
         // Members:
         // RSA Key components (just the three I'm using, there is more...)
-        private BigInteger D = new BigInteger();
-        private BigInteger Exponent = new BigInteger();
-        private BigInteger Modulus = new BigInteger();
-        private BigInteger blind = new BigInteger();
-        private BigInteger enBlind = new BigInteger();
-        private BigInteger invblind = new BigInteger();
+        private BigInteger D = null;
+        private BigInteger Exponent = null;
+        private BigInteger Modulus = null;
+        private BigInteger blind = null;
+        private BigInteger enBlind = null;
+        private BigInteger invblind = null;
 
         // .NET RSA class, for loading and creating key pairs
         private RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
@@ -33,6 +32,23 @@ namespace Bank
         { get { return isPublicKeyLoaded; } }
 
         // Methods:
+        public BigInteger ConvertToBigInt(string data)
+        {
+            BigInteger con = new BigInteger();
+
+            for (int i = 0; i < data.Length; i++)
+            {
+                char c = data[i];
+                if (char.IsDigit(c))
+                {
+                    int num = c - '0';
+                    con = con * 10 + num;
+                }
+            }
+
+            return con;
+        }
+
         public void LoadPublicFromXml(string publicPath)
         {
             if (!File.Exists(publicPath))
@@ -103,8 +119,8 @@ namespace Bank
             BigInteger bnData = new BigInteger(data);
 
             // (bnData ^ D) % Modulus - This Encrypt the data using the private Exponent: D
-            BigInteger encData = BigInteger.ModPow(bnData, D, Modulus);
-            return encData.ToByteArray();
+            BigInteger encData = bnData.modPow(D, Modulus);
+            return encData.getBytes();
         }
 
         // Encrypt data using public key
@@ -118,10 +134,10 @@ namespace Bank
             BigInteger bnData = new BigInteger(data);
 
             // (bnData ^ Exponent) % Modulus - This Encrypt the data using the public Exponent
-            BigInteger encData = BigInteger.ModPow(bnData, Exponent, Modulus);
-     
-            return encData.ToByteArray();
-            
+            BigInteger encData = bnData.modPow(Exponent, Modulus);
+
+            return encData.getBytes();
+
         }
 
 
@@ -132,7 +148,7 @@ namespace Bank
             blind = rnd.Next(1000000, 2100000000);//finding a blind factor
             while (done != true)//finding a blind factor
             {
-                if (BigInteger.GreatestCommonDivisor(Modulus, blind) == 1) done = true;//finding a blind factor
+                if (Modulus.gcd(blind) == 1) done = true;//finding a blind factor
                 else blind = rnd.Next(1000000, 2100000000);//finding a blind factor
 
             }
@@ -158,17 +174,17 @@ namespace Bank
 
         public string PublicBlindEncryption(byte[] data)
         {
-            
+
             // Converting the byte array data into a BigInteger instance
             BigInteger bnData = new BigInteger(data);
-            
 
-            enBlind = BigInteger.ModPow(blind, Exponent, Modulus); //encrypting the blind factor
+
+            enBlind = blind.modPow(Exponent, Modulus); //encrypting the blind factor
             BigInteger encBlindData = enBlind * bnData; //blinding the message with encrypted blindfactor
 
-           //return encBlindData.getBytes();
+            //return encBlindData.getBytes();
             return encBlindData.ToString();
-           
+
         }
 
         public string Sign(BigInteger data)
@@ -176,14 +192,14 @@ namespace Bank
             //BigInteger bnData = new BigInteger(data);   // Converting the byte array data into a BigInteger instance
             BigInteger bnData = data;
             BigInteger signeddata;
-            signeddata = BigInteger.ModPow(bnData, D, Modulus);    // Signning the blinded message
+            signeddata = bnData.modPow(D, Modulus);    // Signning the blinded message
             //return signeddata.getBytes();
             return signeddata.ToString();
         }
 
 
-        
-        
+
+
         // Decrypt data using private key (for data encrypted with public key)
         public byte[] PrivateDecryption(byte[] encryptedData)
         {
@@ -195,52 +211,25 @@ namespace Bank
             BigInteger encData = new BigInteger(encryptedData);
 
             // (encData ^ D) % Modulus - This Decrypt the data using the private Exponent: D
-            BigInteger bnData = BigInteger.ModPow(encData, D, Modulus);
-            BigInteger inverseb = BigInteger.ModPow(blind, -1, Modulus);
-            return bnData.ToByteArray();
+            BigInteger bnData = encData.modPow(D, Modulus);
+            BigInteger inverseb = blind.modInverse(Modulus);
+            return bnData.getBytes();
         }
 
 
-        public static BigInteger ModInverse(BigInteger a, BigInteger n)
-        {
-            BigInteger t = 0, newt = 1;
-            BigInteger r = n, newr = a;
-
-            while (newr != 0)
-            {
-                BigInteger quotient = r / newr;
-
-                (t, newt) = (newt, t - quotient * newt);
-                (r, newr) = (newr, r - quotient * newr);
-            }
-
-            if (r > 1)
-            {
-                throw new Exception("a is not invertible");
-            }
-
-            if (t < 0)
-            {
-                t += n;
-            }
-
-            return t;
-        }
-
-
-        public string Unblind(BigInteger data)
+        public string unblind(BigInteger data)
         //public byte[] unblind(byte[] data)
         {
-            
+
             // Converting the encrypted data byte array data into a BigInteger instance
             //BigInteger bnData = new BigInteger(data);
             BigInteger bnData = data;
             BigInteger unBlindedData;
-            BigInteger invblind = ModInverse(blind, Modulus);   // Finding the inverse of blind factor
+            invblind = blind.modInverse(Modulus);   // Finding the invese of blind factor
             unBlindedData = invblind * bnData;      // Unblinding the signed message
             //return unBlindedData.getBytes();
             return unBlindedData.ToString();
-            
+
         }
 
         public byte[] reveal(BigInteger data)
@@ -248,10 +237,19 @@ namespace Bank
             //BigInteger bnData = new BigInteger(data);
             BigInteger bnData = data;
             BigInteger revealedData;
-            revealedData = BigInteger.ModPow(bnData, Exponent, Modulus);   // Decrypting the singed message
-            return revealedData.ToByteArray();
+            revealedData = bnData.modPow(Exponent, Modulus);   // Decrypting the singed message
+            return revealedData.getBytes();
 
         }
+
+
+
+
+
+
+
+
+
 
         // Decrypt data using public key (for data encrypted with private key)
         public byte[] PublicDecryption(byte[] encryptedData)
@@ -264,8 +262,8 @@ namespace Bank
             BigInteger encData = new BigInteger(encryptedData);
 
             // (encData ^ Exponent) % Modulus - This Decrypt the data using the public Exponent
-            BigInteger bnData = BigInteger.ModPow(encData, Exponent, Modulus);
-            return bnData.ToByteArray();
+            BigInteger bnData = encData.modPow(Exponent, Modulus);
+            return bnData.getBytes();
         }
 
         // Implementation of IDisposable interface,
@@ -273,16 +271,6 @@ namespace Bank
         public void Dispose()
         {
             rsa.Clear();
-        }
-
-        public string PrintExponent()
-        {
-            return Exponent.ToString();
-        }
-
-        public string PrintModulus()
-        {
-            return Modulus.ToString();
         }
     }
 }
