@@ -19,6 +19,7 @@ namespace Customer
         public string Username { get; set; }
         public int Balance { get; set; }
         public bool LoggedIn { get; set; }
+        public int ID { get; set; }
 
         private void UpdateLabels()
         {
@@ -34,8 +35,15 @@ namespace Customer
 
         private void MoneyOrderBtn_Click(object sender, EventArgs e)
         {
-            MoneyOrder newOrder = new();
-            newOrder.Show();
+            if (LoggedIn)
+            {
+                MoneyOrder newOrder = new();
+                newOrder.Show();
+            }
+            else
+            {
+                MessageBox.Show("Please log in.", "Error");
+            }
         }
 
         private void CustomerLoginBtn_Click(object sender, EventArgs e)

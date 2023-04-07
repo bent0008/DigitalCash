@@ -35,8 +35,9 @@ namespace Customer
             string username = usernameTxtbx.Text;
             string password = passwordTxtbx.Text;
             int dbBalance = 0;
+            int dbID = 0;
 
-            string query = "SELECT [balance]FROM LoginCredentials WHERE username = @username AND password = @password";
+            string query = "SELECT [balance],[ID] FROM LoginCredentials WHERE username = @username AND password = @password";
 
             SqlCommand cmd = new SqlCommand(query, con);
 
@@ -48,6 +49,7 @@ namespace Customer
                 while (reader.Read())
                 {
                     dbBalance = reader.GetInt32(0);
+                    dbID = reader.GetInt32(1);
                     codeExecuted = true;
                 }
                 if (codeExecuted == false)
@@ -65,15 +67,15 @@ namespace Customer
                         custForm.Balance = Convert.ToInt32(dbBalance);
                         custForm.Username = username;
                         custForm.LoggedIn = true;
+                        custForm.ID = Convert.ToInt32(dbID);
                         con.Close();
                         this.DialogResult = DialogResult.OK;
                         this.Close();
                     }
                     else
                     {
-                        MessageBox.Show("Error: the bank form was not found.", "Error");
+                        MessageBox.Show("The customer form was not found.", "Error");
                     }
-
                     con.Close();
                     this.Close();
                 }

@@ -1,0 +1,15 @@
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\EncryptionTest.csproj.AssemblyReference.cache
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\EncryptionTest.GeneratedMSBuildEditorConfig.editorconfig
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\EncryptionTest.AssemblyInfoInputs.cache
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\EncryptionTest.AssemblyInfo.cs
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\EncryptionTest.csproj.CoreCompileInputs.cache
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\bin\Debug\net7.0\EncryptionTest.exe
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\bin\Debug\net7.0\EncryptionTest.deps.json
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\bin\Debug\net7.0\EncryptionTest.runtimeconfig.json
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\bin\Debug\net7.0\EncryptionTest.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\bin\Debug\net7.0\EncryptionTest.pdb
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\EncryptionTest.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\refint\EncryptionTest.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\EncryptionTest.pdb
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\EncryptionTest.genruntimeconfig.cache
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\EncryptionTest\EncryptionTest\obj\Debug\net7.0\ref\EncryptionTest.dll

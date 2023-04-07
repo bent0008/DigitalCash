@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Microsoft.VisualBasic.ApplicationServices;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -59,38 +60,17 @@ namespace Customer
             SqlCommand comm = new SqlCommand(deleteQuery, con);
             comm.ExecuteNonQuery();
 
-            if (encryptChkbx.Checked == false)
+            // delete previous CipherMoneyOrder table elements
+            string deleteCipherQuery = "DELETE FROM [dbo].[MoneyOrder]";
+            SqlCommand comm2 = new SqlCommand(deleteCipherQuery, con);
+            comm2.ExecuteNonQuery();
+
+            // load in the customers information
+            CustomerForm cust = new();
+            // check if the customer has enough money in their balance to make the order
+            if (cust.Balance < int.Parse(amount))
             {
-                for (int i = 1; i < (occurances + 1); i++)
-                {
-                    Random rand = new();
-                    int serial = rand.Next(0, 100000000) + 10000000;
-                    string serialNum = serial.ToString();
-
-                    // add these to MoneyOrder
-                    string query = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
-                    SqlCommand cmd = new SqlCommand(query, con);
-
-                    // Insert them to MoneyOrder
-                    cmd.Parameters.AddWithValue("@index", i);
-                    cmd.Parameters.AddWithValue("@moneyAmount", amount);
-                    cmd.Parameters.AddWithValue("@serialNumber", serialNum);
-
-                    cmd.ExecuteNonQuery();
-
-                    // add these to ArchivedOrders
-                    string queryTwo = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
-                    SqlCommand cmd2 = new SqlCommand(queryTwo, con);
-
-                    // Insert them to ArchivedOrders
-                    cmd2.Parameters.AddWithValue("@index", i);
-                    cmd2.Parameters.AddWithValue("@moneyAmount", amount);
-                    cmd2.Parameters.AddWithValue("@serialNumber", serialNum);
-
-                    cmd2.ExecuteNonQuery();
-
-                
-                }
+                MessageBox.Show("Not enough available funds.", "Error");
             }
             else
             {
@@ -100,47 +80,50 @@ namespace Customer
                     Random rand = new();
                     int serialNum = rand.Next(0, 100000000) + 10000000;
 
+                    // create a random number to be the left and the XOR for the right
+                    int left = rand.Next(101, int.MaxValue);
+                    int right = cust.ID ^ left;
+
+                    // create a plaintext money order
+                    string plainQuery = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
+                    SqlCommand plainCmd = new SqlCommand(plainQuery, con);
+
+                    // Insert them to MoneyOrder
+                    plainCmd.Parameters.AddWithValue("@index", i);
+                    plainCmd.Parameters.AddWithValue("@moneyAmount", amount);
+                    plainCmd.Parameters.AddWithValue("@serialNumber", serialNum);
+                    plainCmd.Parameters.AddWithValue("@leftNumber", left);
+                    plainCmd.Parameters.AddWithValue("@rightNumber", right);
+
+                    plainCmd.ExecuteNonQuery();
+
+
                     // call the RSAEncryption class to use its functions
-                    RSAEncryption rsaEnc = new();
+                    RSAEncryption rsa = new();
 
                     // declare the path to the public key and load it in
                     string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\publickey.xml";
-                    rsaEnc.LoadPublicFromXml(publicPath);
+                    rsa.LoadPublicFromXml(publicPath);
 
-                    // Encrypt with blind factor
-                    rsaEnc.createBlindFactor();
-                    //string blindEncAmount = rsaEnc.PublicBlindEncryption(Encoding.UTF8.GetBytes(amount));
-                    //string blindEncSerial = rsaEnc.PublicBlindEncryption(Encoding.UTF8.GetBytes(serialNum.ToString()));
+                    // Create the blind factor
+                    rsa.createBlindFactor();
 
-                    // Read the XML string of the private and public key from a file
-                    string privateKeyXml = File.ReadAllText("privatekey.xml");
-                    string publicKeyXml = File.ReadAllText("publickey.xml");
+                    // get the blind factor and set it to a variable
+                    string blind = rsa.retrieveBlindFactor();
+                    // change the blind factor to a bigint
+                    BigInteger blindNum = rsa.ConvertToBigInt(blind);
+                    // this is just in case, we set the blind as the bigint number
+                    rsa.setBlindFactor(blindNum);
 
-                    // Load the private key from the XML string
-                    RSACryptoServiceProvider rsaPrivate = new RSACryptoServiceProvider();
-                    rsaPrivate.FromXmlString(privateKeyXml);
+                    // Encrypt the blind factor with the public key and multiply it by the serialNumber
+                    string cipherSerial = rsa.PublicBlindEncryption(Encoding.UTF8.GetBytes(serialNum.ToString()));
+                    // Encrypt the blind factor with the public key and multiply it by the amount
+                    string cipherAmount = rsa.PublicBlindEncryption(Encoding.UTF8.GetBytes(amount));
 
-                    // Load the public key from the XML string
-                    RSACryptoServiceProvider rsaPublic = new RSACryptoServiceProvider();
-                    rsaPublic.FromXmlString(publicKeyXml);
-
-                    // Convert a plaintext message to a byte array
-                    byte[] amountBytes = System.Text.Encoding.UTF8.GetBytes(amount);
-                    byte[] serialBytes = System.Text.Encoding.UTF8.GetBytes(serialNum.ToString());
-
-                    // Encrypt the plaintext using the private key
-                    byte[] cipherAmountBytes = rsaPrivate.Encrypt(amountBytes, false);
-                    byte[] cipherSerialBytes = rsaPrivate.Encrypt(serialBytes, false);
-                    string cipherAmount = Convert.ToHexString(cipherAmountBytes);
-                    string cipherSerial = Convert.ToHexString(cipherSerialBytes);
-                    MessageBox.Show(cipherAmount);
 
                     // Create command for ArchivedBlinds
                     string blindQuery = "INSERT INTO [dbo].[ArchivedBlinds]([index],[serialNumber],[blind]) VALUES(@index,@serialNumber,@blind)";
                     SqlCommand cmdBlind = new SqlCommand(blindQuery, con);
-
-                    // Set the blind to a variable
-                    string blind = rsaEnc.retrieveBlindFactor();
 
                     // Add data to ArchivedBlinds
                     cmdBlind.Parameters.AddWithValue("@index", i);
@@ -149,36 +132,53 @@ namespace Customer
 
                     cmdBlind.ExecuteNonQuery();
 
-                    // add these to MoneyOrder
-                    string query = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
+                    // create the left and right hash to be changed
+                    string leftHash, rightHash;
+
+                    // hash the left and right numbers
+                    using (SHA256 sha256 = SHA256Managed.Create())
+                    {
+                        byte[] leftBytes = Encoding.UTF8.GetBytes(left.ToString());
+                        byte[] computedLeftHash = sha256.ComputeHash(leftBytes);
+                        leftHash = Convert.ToBase64String(computedLeftHash);
+
+                        byte[] rightBytes = Encoding.UTF8.GetBytes(right.ToString());
+                        byte[] computedRightHash = sha256.ComputeHash(rightBytes);
+                        rightHash = Convert.ToBase64String(computedRightHash);
+                    }
+
+                    // add these to CipherMoneyOrder
+                    string query = "INSERT INTO [dbo].[CipherMoneyOrder]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
                     SqlCommand cmd = new SqlCommand(query, con);
 
                     // Insert them to MoneyOrder
                     cmd.Parameters.AddWithValue("@index", i);
                     cmd.Parameters.AddWithValue("@moneyAmount", cipherAmount);
                     cmd.Parameters.AddWithValue("@serialNumber", cipherSerial);
+                    cmd.Parameters.AddWithValue("@leftNumber", leftHash);
+                    cmd.Parameters.AddWithValue("@rightNumber", rightHash);
 
                     cmd.ExecuteNonQuery();
 
                     // add these to ArchivedOrders
-                    string archivedQuery = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
+                    string archivedQuery = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
                     SqlCommand cmd2 = new SqlCommand(archivedQuery, con);
 
                     // Insert them to ArchivedOrders
                     cmd2.Parameters.AddWithValue("@index", i);
                     cmd2.Parameters.AddWithValue("@moneyAmount", cipherAmount);
                     cmd2.Parameters.AddWithValue("@serialNumber", cipherSerial);
+                    cmd.Parameters.AddWithValue("@leftNumber", leftHash);
+                    cmd.Parameters.AddWithValue("@rightNumber", rightHash);
 
                     cmd2.ExecuteNonQuery();
-
-
                 }
             }
             this.Close();
         }
 
 
-        // This will create 100 money orders, but 2 of them will be the same, meaning that cheating has occurred
+        // This will create 100 money orders, but 2 of them will have the same amount, meaning that cheating has occurred
         private void CheatedMoneyOrder()
         {
             SqlConnection con = new SqlConnection(connectionString);
@@ -193,6 +193,11 @@ namespace Customer
             SqlCommand comm = new SqlCommand(deleteQuery, con);
             comm.ExecuteNonQuery();
 
+            // delete previous CipherMoneyOrder table elements
+            string deleteCipherQuery = "DELETE FROM [dbo].[MoneyOrder]";
+            SqlCommand comm2 = new SqlCommand(deleteCipherQuery, con);
+            comm2.ExecuteNonQuery();
+
             Random randInt = new();
             int randomRow = randInt.Next(2, 98);
             string duplicate = randInt.Next(1, randomRow - 1).ToString();
@@ -200,112 +205,56 @@ namespace Customer
             int serial = 0;
             string serialNum = "";
 
-            if (encryptChkbx.Checked == false)
+            // load in the customers information
+            CustomerForm cust = new();
+            // check if the customer has enough money in their balance to make the order
+            if (cust.Balance < int.Parse(amount))
             {
-                for (int i = 1; i < (occurances + 1); i++)
-                {
-                    if (i == randomRow)
-                    {
-                        string selectQuery = "SELECT * FROM [dbo].[MoneyOrder] WHERE [index] = " + duplicate;
-                        MessageBox.Show(selectQuery);
-                        MessageBox.Show(randomRow.ToString());
-                        SqlCommand selectCmd = new SqlCommand(selectQuery, con);
-
-                        using (SqlDataReader reader = selectCmd.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                amount = reader.GetString(1);
-                                serialNum = reader.GetString(2);
-                            }
-                        }
-
-                        // add these to MoneyOrder
-                        string query = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
-                        SqlCommand cmd = new SqlCommand(query, con);
-
-                        // Insert them to MoneyOrder
-                        cmd.Parameters.AddWithValue("@index", i);
-                        cmd.Parameters.AddWithValue("@moneyAmount", amount);
-                        cmd.Parameters.AddWithValue("@serialNumber", serialNum);
-
-                        cmd.ExecuteNonQuery();
-
-                        // add these to ArchivedOrders
-                        string queryTwo = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
-                        SqlCommand cmd2 = new SqlCommand(queryTwo, con);
-
-                        // Insert them to ArchivedOrders
-                        cmd2.Parameters.AddWithValue("@index", i);
-                        cmd2.Parameters.AddWithValue("@moneyAmount", amount);
-                        cmd2.Parameters.AddWithValue("@serialNumber", serialNum);
-
-                        cmd2.ExecuteNonQuery();
-                    }
-                    else
-                    {
-                    Random rand = new();
-                    serial = rand.Next(0, 100000000) + 10000000;
-                    serialNum = serial.ToString();
-
-                    // add these to MoneyOrder
-                    string query = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
-                    SqlCommand cmd = new SqlCommand(query, con);
-
-                    // Insert them to MoneyOrder
-                    cmd.Parameters.AddWithValue("@index", i);
-                    cmd.Parameters.AddWithValue("@moneyAmount", amount);
-                    cmd.Parameters.AddWithValue("@serialNumber", serialNum);
-
-                    cmd.ExecuteNonQuery();
-
-                    // add these to ArchivedOrders
-                    string queryTwo = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
-                    SqlCommand cmd2 = new SqlCommand(queryTwo, con);
-
-                    // Insert them to ArchivedOrders
-                    cmd2.Parameters.AddWithValue("@index", i);
-                    cmd2.Parameters.AddWithValue("@moneyAmount", amount);
-                    cmd2.Parameters.AddWithValue("@serialNumber", serialNum);
-
-                    cmd2.ExecuteNonQuery();
-                    }
-                }
+                MessageBox.Show("Not enough available funds.", "Error");
             }
             else
             {
-                for (int i = 1; i < (occurances + 1); i++)
+                for (int i = 0; i < (occurances); i++)
                 {
-                    // Call the RSACryptoServiceProvider namespace
-                    RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
-
                     // create random serial number
                     Random rand = new();
                     serial = rand.Next(0, 100000000) + 10000000;
                     serialNum = serial.ToString();
 
+                    // create a random number to be the left and the XOR for the right
+                    int left = rand.Next(101, int.MaxValue);
+                    int right = cust.ID ^ left;
+
+
                     // call the RSAEncryption class to use its functions
-                    RSAEncryption rsaEnc = new();
+                    RSAEncryption rsa = new();
 
-                    // declare the path to the private key and load it in
-                    string privatePath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\privatekey.xml";
-                    rsaEnc.LoadPrivateFromXml(privatePath);
+                    // declare the path to the public key and load it in
+                    string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\publickey.xml";
+                    rsa.LoadPublicFromXml(publicPath);
 
-                    // Encrypt with blind factor
-                    rsaEnc.createBlindFactor();
-                    string blindEncAmount = rsaEnc.PublicBlindEncryption(Encoding.UTF8.GetBytes(amount));
-                    string blindEncSerial = rsaEnc.PublicBlindEncryption(Encoding.UTF8.GetBytes(serialNum));
+                    // Create the blind factor
+                    rsa.createBlindFactor();
+
+                    // get the blind factor and set it to a variable
+                    string blind = rsa.retrieveBlindFactor();
+                    // change the blind factor to a bigint
+                    BigInteger blindNum = rsa.ConvertToBigInt(blind);
+                    // this is just in case, we set the blind as the bigint number
+                    rsa.setBlindFactor(blindNum);
+
+                    // Encrypt the blind factor with the public key and multiply it by the serialNumber
+                    string cipherSerial = rsa.PublicBlindEncryption(Encoding.UTF8.GetBytes(serialNum.ToString()));
+                    // Encrypt the blind factor with the public key and multiply it by the amount
+                    string cipherAmount = rsa.PublicBlindEncryption(Encoding.UTF8.GetBytes(amount));
 
                     // Create command for ArchivedBlinds
                     string blindQuery = "INSERT INTO [dbo].[ArchivedBlinds]([index],[serialNumber],[blind]) VALUES(@index,@serialNumber,@blind)";
                     SqlCommand cmdBlind = new SqlCommand(blindQuery, con);
 
-                    // Set the blind to a variable
-                    string blind = rsaEnc.retrieveBlindFactor();
-
                     // Add data to ArchivedBlinds
                     cmdBlind.Parameters.AddWithValue("@index", i);
-                    cmdBlind.Parameters.AddWithValue("@serialNumber", blindEncSerial);
+                    cmdBlind.Parameters.AddWithValue("@serialNumber", cipherSerial);
                     cmdBlind.Parameters.AddWithValue("@blind", blind);
 
                     cmdBlind.ExecuteNonQuery();
@@ -338,8 +287,48 @@ namespace Customer
 
                         cmdCheated.ExecuteNonQuery();
 
+                        // create the left and right hash to be changed
+                        string leftHash, rightHash;
+
+                        // hash the left and right numbers
+                        using (SHA256 sha256 = SHA256Managed.Create())
+                        {
+                            byte[] leftBytes = Encoding.UTF8.GetBytes(left.ToString());
+                            byte[] computedLeftHash = sha256.ComputeHash(leftBytes);
+                            leftHash = Convert.ToBase64String(computedLeftHash);
+
+                            byte[] rightBytes = Encoding.UTF8.GetBytes(right.ToString());
+                            byte[] computedRightHash = sha256.ComputeHash(rightBytes);
+                            rightHash = Convert.ToBase64String(computedRightHash);
+                        }
+
+                        string selectQuery2 = "SELECT * FROM [dbo].[CipherMoneyOrder] WHERE [index] = " + duplicate;
+                        SqlCommand selectCmd2 = new SqlCommand(selectQuery2, con);
+
+                        using (SqlDataReader reader = selectCmd2.ExecuteReader())
+                        {
+                            if (reader.Read())
+                            {
+                                cipherAmount = reader.GetString(1);
+                                cipherSerial = reader.GetString(2);
+                            }
+                        }
+
+                        // add these to CipherMoneyOrder
+                        string query = "INSERT INTO [dbo].[CipherMoneyOrder]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
+                        SqlCommand cmd = new SqlCommand(query, con);
+
+                        // Insert them to MoneyOrder
+                        cmd.Parameters.AddWithValue("@index", i);
+                        cmd.Parameters.AddWithValue("@moneyAmount", cipherAmount);
+                        cmd.Parameters.AddWithValue("@serialNumber", cipherSerial);
+                        cmd.Parameters.AddWithValue("@leftNumber", leftHash);
+                        cmd.Parameters.AddWithValue("@rightNumber", rightHash);
+
+                        cmd.ExecuteNonQuery();
+
                         // add these to ArchivedOrders
-                        string queryCheated2 = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
+                        string queryCheated2 = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
                         SqlCommand cmdCheated2 = new SqlCommand(queryCheated2, con);
 
                         // Insert them to ArchivedOrders
@@ -351,25 +340,57 @@ namespace Customer
                     }
                     else
                     {
-                        // add these to MoneyOrder
-                        string query = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
+                        // create a plaintext money order
+                        string plainQuery = "INSERT INTO [dbo].[MoneyOrder]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
+                        SqlCommand plainCmd = new SqlCommand(plainQuery, con);
+
+                        // Insert them to MoneyOrder
+                        plainCmd.Parameters.AddWithValue("@index", i);
+                        plainCmd.Parameters.AddWithValue("@moneyAmount", amount);
+                        plainCmd.Parameters.AddWithValue("@serialNumber", serialNum);
+                        plainCmd.Parameters.AddWithValue("@leftNumber", left);
+                        plainCmd.Parameters.AddWithValue("@rightNumber", right);
+
+                        plainCmd.ExecuteNonQuery();
+
+                        // create the left and right hash to be changed
+                        string leftHash, rightHash;
+
+                        // hash the left and right numbers
+                        using (SHA256 sha256 = SHA256Managed.Create())
+                        {
+                            byte[] leftBytes = Encoding.UTF8.GetBytes(left.ToString());
+                            byte[] computedLeftHash = sha256.ComputeHash(leftBytes);
+                            leftHash = Convert.ToBase64String(computedLeftHash);
+
+                            byte[] rightBytes = Encoding.UTF8.GetBytes(right.ToString());
+                            byte[] computedRightHash = sha256.ComputeHash(rightBytes);
+                            rightHash = Convert.ToBase64String(computedRightHash);
+                        }
+
+                        // add these to CipherMoneyOrder
+                        string query = "INSERT INTO [dbo].[CipherMoneyOrder]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
                         SqlCommand cmd = new SqlCommand(query, con);
 
                         // Insert them to MoneyOrder
                         cmd.Parameters.AddWithValue("@index", i);
-                        cmd.Parameters.AddWithValue("@moneyAmount", blindEncAmount);
-                        cmd.Parameters.AddWithValue("@serialNumber", blindEncSerial);
+                        cmd.Parameters.AddWithValue("@moneyAmount", cipherAmount);
+                        cmd.Parameters.AddWithValue("@serialNumber", cipherSerial);
+                        cmd.Parameters.AddWithValue("@leftNumber", leftHash);
+                        cmd.Parameters.AddWithValue("@rightNumber", rightHash);
 
                         cmd.ExecuteNonQuery();
 
                         // add these to ArchivedOrders
-                        string archivedQuery = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber]) VALUES(@index,@moneyAmount,@serialNumber)";
+                        string archivedQuery = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber],[leftNumber],[rightNumber]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber,@rightNumber)";
                         SqlCommand cmd2 = new SqlCommand(archivedQuery, con);
 
                         // Insert them to ArchivedOrders
                         cmd2.Parameters.AddWithValue("@index", i);
-                        cmd2.Parameters.AddWithValue("@moneyAmount", blindEncAmount);
-                        cmd2.Parameters.AddWithValue("@serialNumber", blindEncSerial);
+                        cmd2.Parameters.AddWithValue("@moneyAmount", cipherAmount);
+                        cmd2.Parameters.AddWithValue("@serialNumber", cipherSerial);
+                        cmd2.Parameters.AddWithValue("@leftNumber", leftHash);
+                        cmd2.Parameters.AddWithValue("@rightNumber", rightHash);
 
                         cmd2.ExecuteNonQuery();
                     }
