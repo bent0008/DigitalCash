@@ -21,7 +21,9 @@ namespace EncryptionTest
     {
         static void Main(string[] args)
         {
-            NewKey();
+            //NewKey();
+
+            DynamicVar();
 
             Console.WriteLine("Encryption: ");
             Encryption();
@@ -140,6 +142,16 @@ namespace EncryptionTest
 
             Console.WriteLine($"User ID: {userId}");
             Console.WriteLine($"Random Pair: ({x}, {y})");
+        }
+
+        static void DynamicVar()
+        {
+            List<int> leftValues = new List<int>();
+            List<int> righttValues = new List<int>();
+            for (int i = 1; i <= 15; i++)
+            {
+                
+            }
         }
     }
 }

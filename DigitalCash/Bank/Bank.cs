@@ -135,9 +135,13 @@ namespace Bank
                     int index = reader.GetInt32(0);
                     string amountString = reader.GetString(1);
                     string serialNumberString = reader.GetString(2);
-                    int left = reader.GetInt32(3);
-                    int right = reader.GetInt32(4);
-                    string blindString = reader.GetString(6);
+                    int left1 = reader.GetInt32(3);
+                    int right1 = reader.GetInt32(4);
+                    int left2 = reader.GetInt32(5);
+                    int right2 = reader.GetInt32(6);
+                    int left3 = reader.GetInt32(7);
+                    int right3 = reader.GetInt32(8);
+                    string blindString = reader.GetString(35);
 
                     // when the index is the selection
                     if (index == selection)
