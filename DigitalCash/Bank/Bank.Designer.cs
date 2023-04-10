@@ -43,7 +43,7 @@
             // 
             // CheatedBtn
             // 
-            this.CheatedBtn.Location = new System.Drawing.Point(403, 95);
+            this.CheatedBtn.Location = new System.Drawing.Point(403, 250);
             this.CheatedBtn.Name = "CheatedBtn";
             this.CheatedBtn.Size = new System.Drawing.Size(100, 23);
             this.CheatedBtn.TabIndex = 1;
@@ -111,7 +111,7 @@
             // 
             // DepositBtn
             // 
-            this.DepositBtn.Location = new System.Drawing.Point(217, 195);
+            this.DepositBtn.Location = new System.Drawing.Point(236, 195);
             this.DepositBtn.Name = "DepositBtn";
             this.DepositBtn.Size = new System.Drawing.Size(97, 23);
             this.DepositBtn.TabIndex = 9;
@@ -174,7 +174,6 @@
 
         #endregion
 
-        private Button UnblindBtn;
         private Button CheatedBtn;
         private Button SignBtn;
         private Button LoginBtn;

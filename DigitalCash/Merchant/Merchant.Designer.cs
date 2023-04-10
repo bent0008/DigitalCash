@@ -38,6 +38,9 @@
             this.priceHeader = new System.Windows.Forms.ColumnHeader();
             this.BuyBtn = new System.Windows.Forms.Button();
             this.RevealBtn = new System.Windows.Forms.Button();
+            this.HashBtn = new System.Windows.Forms.Button();
+            this.MerchantChkBx = new System.Windows.Forms.CheckBox();
+            this.CustomerChkBx = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // CustomerLoginBtn
@@ -131,11 +134,44 @@
             this.RevealBtn.UseVisualStyleBackColor = true;
             this.RevealBtn.Click += new System.EventHandler(this.RevealBtn_Click);
             // 
+            // HashBtn
+            // 
+            this.HashBtn.Location = new System.Drawing.Point(155, 235);
+            this.HashBtn.Name = "HashBtn";
+            this.HashBtn.Size = new System.Drawing.Size(101, 23);
+            this.HashBtn.TabIndex = 8;
+            this.HashBtn.Text = "Reveal Hashes";
+            this.HashBtn.UseVisualStyleBackColor = true;
+            this.HashBtn.Click += new System.EventHandler(this.HashBtn_Click);
+            // 
+            // MerchantChkBx
+            // 
+            this.MerchantChkBx.AutoSize = true;
+            this.MerchantChkBx.Location = new System.Drawing.Point(396, 419);
+            this.MerchantChkBx.Name = "MerchantChkBx";
+            this.MerchantChkBx.Size = new System.Drawing.Size(111, 19);
+            this.MerchantChkBx.TabIndex = 9;
+            this.MerchantChkBx.Text = "Merchant Cheat";
+            this.MerchantChkBx.UseVisualStyleBackColor = true;
+            // 
+            // CustomerChkBx
+            // 
+            this.CustomerChkBx.AutoSize = true;
+            this.CustomerChkBx.Location = new System.Drawing.Point(585, 419);
+            this.CustomerChkBx.Name = "CustomerChkBx";
+            this.CustomerChkBx.Size = new System.Drawing.Size(112, 19);
+            this.CustomerChkBx.TabIndex = 10;
+            this.CustomerChkBx.Text = "Customer Cheat";
+            this.CustomerChkBx.UseVisualStyleBackColor = true;
+            // 
             // Merchant
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(800, 450);
+            this.Controls.Add(this.CustomerChkBx);
+            this.Controls.Add(this.MerchantChkBx);
+            this.Controls.Add(this.HashBtn);
             this.Controls.Add(this.RevealBtn);
             this.Controls.Add(this.BuyBtn);
             this.Controls.Add(this.itemList);
@@ -164,5 +200,8 @@
         private ColumnHeader priceHeader;
         private Button BuyBtn;
         private Button RevealBtn;
+        private Button HashBtn;
+        private CheckBox MerchantChkBx;
+        private CheckBox CustomerChkBx;
     }
 }

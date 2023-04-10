@@ -34,7 +34,6 @@ namespace Customer
         {
             if (cheatChkbx.Checked == true)
             {
-                MessageBox.Show("You cheated!");
                 CheatedMoneyOrder();
             }
             else
@@ -169,12 +168,13 @@ namespace Customer
 
 
                     // Create command for ArchivedBlinds
-                    string blindQuery = "INSERT INTO [dbo].[ArchivedBlinds]([index],[serialNumber],[blind]) VALUES(@index,@serialNumber,@blind)";
+                    string blindQuery = "INSERT INTO [dbo].[ArchivedBlinds]([index],[serialNumber],[encryptedSerialNumber],[blind]) VALUES(@index,@serialNumber,@encryptedSerialNumber,@blind)";
                     using SqlCommand cmdBlind = new SqlCommand(blindQuery, con);
                     {
                         // Add data to ArchivedBlinds
                         cmdBlind.Parameters.AddWithValue("@index", i);
                         cmdBlind.Parameters.AddWithValue("@serialNumber", serialNum);
+                        cmdBlind.Parameters.AddWithValue("@encryptedSerialNumber", cipherSerial);
                         cmdBlind.Parameters.AddWithValue("@blind", blind);
 
                         cmdBlind.ExecuteNonQuery();
@@ -239,48 +239,6 @@ namespace Customer
                         cmd.Parameters.AddWithValue("@rightNumber15", rightHashes[14]);
 
                         cmd.ExecuteNonQuery();
-                    }
-
-                    // add these to ArchivedOrders
-                    string archivedQuery = "INSERT INTO [dbo].[ArchivedOrders]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
-                    using SqlCommand cmd2 = new SqlCommand(archivedQuery, con);
-                    {
-                        // Insert them to ArchivedOrders
-                        cmd2.Parameters.AddWithValue("@index", i);
-                        cmd2.Parameters.AddWithValue("@moneyAmount", cipherAmount);
-                        cmd2.Parameters.AddWithValue("@serialNumber", cipherSerial);
-                        cmd2.Parameters.AddWithValue("@leftNumber1", leftHashes[0]);
-                        cmd2.Parameters.AddWithValue("@rightNumber1", rightHashes[0]);
-                        cmd2.Parameters.AddWithValue("@leftNumber2", leftHashes[1]);
-                        cmd2.Parameters.AddWithValue("@rightNumber2", rightHashes[1]);
-                        cmd2.Parameters.AddWithValue("@leftNumber3", leftHashes[2]);
-                        cmd2.Parameters.AddWithValue("@rightNumber3", rightHashes[2]);
-                        cmd2.Parameters.AddWithValue("@leftNumber4", leftHashes[3]);
-                        cmd2.Parameters.AddWithValue("@rightNumber4", rightHashes[3]);
-                        cmd2.Parameters.AddWithValue("@leftNumber5", leftHashes[4]);
-                        cmd2.Parameters.AddWithValue("@rightNumber5", rightHashes[4]);
-                        cmd2.Parameters.AddWithValue("@leftNumber6", leftHashes[5]);
-                        cmd2.Parameters.AddWithValue("@rightNumber6", rightHashes[5]);
-                        cmd2.Parameters.AddWithValue("@leftNumber7", leftHashes[6]);
-                        cmd2.Parameters.AddWithValue("@rightNumber7", rightHashes[6]);
-                        cmd2.Parameters.AddWithValue("@leftNumber8", leftHashes[7]);
-                        cmd2.Parameters.AddWithValue("@rightNumber8", rightHashes[7]);
-                        cmd2.Parameters.AddWithValue("@leftNumber9", leftHashes[8]);
-                        cmd2.Parameters.AddWithValue("@rightNumber9", rightHashes[8]);
-                        cmd2.Parameters.AddWithValue("@leftNumber10", leftHashes[9]);
-                        cmd2.Parameters.AddWithValue("@rightNumber10", rightHashes[9]);
-                        cmd2.Parameters.AddWithValue("@leftNumber11", leftHashes[10]);
-                        cmd2.Parameters.AddWithValue("@rightNumber11", rightHashes[10]);
-                        cmd2.Parameters.AddWithValue("@leftNumber12", leftHashes[11]);
-                        cmd2.Parameters.AddWithValue("@rightNumber12", rightHashes[11]);
-                        cmd2.Parameters.AddWithValue("@leftNumber13", leftHashes[12]);
-                        cmd2.Parameters.AddWithValue("@rightNumber13", rightHashes[12]);
-                        cmd2.Parameters.AddWithValue("@leftNumber14", leftHashes[13]);
-                        cmd2.Parameters.AddWithValue("@rightNumber14", rightHashes[13]);
-                        cmd2.Parameters.AddWithValue("@leftNumber15", leftHashes[14]);
-                        cmd2.Parameters.AddWithValue("@rightNumber15", rightHashes[14]);
-
-                        cmd2.ExecuteNonQuery();
                     }
                 }
             }
