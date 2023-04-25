@@ -20,7 +20,7 @@ namespace Bank
             InitializeComponent();
         }
 
-        public string connectionString = "Data Source=BEN_T\\SQLEXPRESS;Initial Catalog=DigitalCash;Integrated Security=True";
+        public string connectionString = "Data Source=LAPTOP-UOPDFGH4\\SQLEXPRESS;Initial Catalog=DigitalCash;Integrated Security=True";
 
         private void DepositBtn_Click(object sender, EventArgs e)
         {

@@ -16,6 +16,7 @@ using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 using System.Reflection;
 using System.Security.Cryptography;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.Rebar;
 
 namespace Merchant
 {
@@ -26,22 +27,45 @@ namespace Merchant
             InitializeComponent();
         }
 
-        public string connectionString = "Data Source=BEN_T\\SQLEXPRESS;Initial Catalog=DigitalCash;Integrated Security=True";
+        public string connectionString = "Data Source=LAPTOP-UOPDFGH4\\SQLEXPRESS;Initial Catalog=DigitalCash;Integrated Security=True";
 
         public string Username { get; set; }
         public int Balance { get; set; }
         public bool LoggedIn { get; set; }
         private int Amount { get; set; }
+        private bool merchantCheat = false;
+        private bool customerCheat = false;
 
         private void CustomerLoginBtn_Click(object sender, EventArgs e)
         {
             Login custLogin = new();
             custLogin.ShowDialog(this);
             UpdateLabels();
+
+            updateBox.AppendText($"Logged in as {Username}\n");
         }
 
         private void UpdateLabels()
         {
+            // update the balance
+            SqlConnection con = new SqlConnection(connectionString);
+            con.Open();
+
+            string query = "SELECT [balance],[ID] FROM LoginCredentials WHERE username = @username";
+
+            SqlCommand cmd = new SqlCommand(query, con);
+
+            cmd.Parameters.AddWithValue("@username", Username);
+
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    Balance = reader.GetInt32(0);
+                }
+                con.Close();
+            }
+
             usernameLbl.Text = Username;
             balanceAmountLbl.Text = "$" + Balance.ToString();
         }
@@ -101,7 +125,21 @@ namespace Merchant
 
         private void BuyBtn_Click(object sender, EventArgs e)
         {
+            merchantCheat = false;
+            customerCheat = false;
+
+            UpdateLabels();
+
             RSAEncryption rsa = new RSAEncryption();
+
+            SqlConnection con = new SqlConnection(connectionString);
+            con.Open();
+
+            Random rand = new Random();
+
+            // create left and right values lists
+            List<string> leftValues = new List<string>();
+            List<string> rightValues = new List<string>();
 
             if (!LoggedIn)
             {
@@ -115,8 +153,6 @@ namespace Merchant
                 foreach (ListViewItem selectedItem in itemList.SelectedItems)
                 {
                     // Buy items
-                    MessageBox.Show(selectedItem.Text + " " + selectedItem.SubItems[1].Text, "Item");
-
                     string costString = selectedItem.SubItems[1].Text.Substring(1, selectedItem.SubItems[1].Text.Length - 1);
                     int costInt = Convert.ToInt32(costString);
 
@@ -134,11 +170,8 @@ namespace Merchant
                         total += price;  // Add each integer to the total
                     }
 
-                    SqlConnection con = new SqlConnection(connectionString);
-                    con.Open();
-
                     // get the selection from the table
-                    string query = "SELECT * FROM [dbo].[Payment]";
+                    string query = "SELECT * FROM [dbo].[UnblindedSelection]";
 
                     int index = 0;
                     string amountString = "";
@@ -215,7 +248,24 @@ namespace Merchant
                     }
                     reader.Close();
 
-                    Amount = Int32.Parse(amountString);
+                    // declare the path to the public key and load it in
+                    string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Merchant\bin\Debug\net7.0-windows\publickey.xml";
+                    rsa.LoadPublicFromXml(publicPath);
+
+                    byte[] byteAmount = rsa.reveal(rsa.ConvertToBigInt(amountString));
+
+                    string amount = Encoding.UTF8.GetString(byteAmount);
+
+                    try
+                    {
+                        Amount = Int32.Parse(amount);
+                    }
+                    catch (FormatException ex)
+                    {
+                        MessageBox.Show("The money order is empty or has incorrect values", "Error");
+                        return;
+                    }
+
 
                     if (Amount + 0.0001 <= total)
                     {
@@ -227,11 +277,12 @@ namespace Merchant
                         if (MerchantChkBx.Checked == true)
                         {
                             // Give the payment to the bank
-                            string TwiceQuery = "INSERT INTO [dbo].[ArchivedPayments]([moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
+                            string TwiceQuery = "INSERT INTO [dbo].[UnblindedSelection]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
 
                             SqlCommand cmdTwice = new SqlCommand(TwiceQuery, con);
 
                             // Insert them to ArchivedPayments
+                            cmdTwice.Parameters.AddWithValue("@index", index);
                             cmdTwice.Parameters.AddWithValue("@moneyAmount", amountString);
                             cmdTwice.Parameters.AddWithValue("@serialNumber", serialNumberString);
                             cmdTwice.Parameters.AddWithValue("@leftNumber1", left1);
@@ -266,154 +317,172 @@ namespace Merchant
                             cmdTwice.Parameters.AddWithValue("@rightNumber15", right15);
 
                             cmdTwice.ExecuteNonQuery();
+
+
+                            // re-input the revealedvalues
+                            // get the revealed left and rights from the table
+                            string revealedQuery = "SELECT * FROM [dbo].[RevealedValues]";
+
+                            using SqlCommand revealedCmd = new SqlCommand(revealedQuery, con);
+                            using SqlDataReader revealedReader = revealedCmd.ExecuteReader();
+
+
+                            while (revealedReader.Read())
+                            {
+                                index = revealedReader.GetInt32(0);
+                                amountString = revealedReader.GetString(1);
+                                serialNumberString = revealedReader.GetString(2);
+                                left1 = revealedReader.GetString(3);
+                                right1 = revealedReader.GetString(4);
+                                left2 = revealedReader.GetString(5);
+                                right2 = revealedReader.GetString(6);
+                                left3 = revealedReader.GetString(7);
+                                right3 = revealedReader.GetString(8);
+                                left4 = revealedReader.GetString(9);
+                                right4 = revealedReader.GetString(10);
+                                left5 = revealedReader.GetString(11);
+                                right5 = revealedReader.GetString(12);
+                                left6 = revealedReader.GetString(13);
+                                right6 = revealedReader.GetString(14);
+                                left7 = revealedReader.GetString(15);
+                                right7 = revealedReader.GetString(16);
+                                left8 = revealedReader.GetString(17);
+                                right8 = revealedReader.GetString(18);
+                                left9 = revealedReader.GetString(19);
+                                right9 = revealedReader.GetString(20);
+                                left10 = revealedReader.GetString(21);
+                                right10 = revealedReader.GetString(22);
+                                left11 = revealedReader.GetString(23);
+                                right11 = revealedReader.GetString(24);
+                                left12 = revealedReader.GetString(25);
+                                right12 = revealedReader.GetString(26);
+                                left13 = revealedReader.GetString(27);
+                                right13 = revealedReader.GetString(28);
+                                left14 = revealedReader.GetString(29);
+                                right14 = revealedReader.GetString(30);
+                                left15 = revealedReader.GetString(31);
+                                right15 = revealedReader.GetString(32);
+                            }
+                            revealedReader.Close();
+
+
+                            // Resend the revealed values to the bank
+                            string query2 = "INSERT INTO [dbo].[RevealedValues]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
+
+                            SqlCommand cmd2 = new SqlCommand(query2, con);
+
+                            // Insert them to ArchivedPayments
+                            cmd2.Parameters.AddWithValue("@index", index);
+                            cmd2.Parameters.AddWithValue("@moneyAmount", amount);
+                            cmd2.Parameters.AddWithValue("@serialNumber", serialNumberString);
+                            cmd2.Parameters.AddWithValue("@leftNumber1", left1);
+                            cmd2.Parameters.AddWithValue("@rightNumber1", right1);
+                            cmd2.Parameters.AddWithValue("@leftNumber2", left2);
+                            cmd2.Parameters.AddWithValue("@rightNumber2", right2);
+                            cmd2.Parameters.AddWithValue("@leftNumber3", left3);
+                            cmd2.Parameters.AddWithValue("@rightNumber3", right3);
+                            cmd2.Parameters.AddWithValue("@leftNumber4", left4);
+                            cmd2.Parameters.AddWithValue("@rightNumber4", right4);
+                            cmd2.Parameters.AddWithValue("@leftNumber5", left5);
+                            cmd2.Parameters.AddWithValue("@rightNumber5", right5);
+                            cmd2.Parameters.AddWithValue("@leftNumber6", left6);
+                            cmd2.Parameters.AddWithValue("@rightNumber6", right6);
+                            cmd2.Parameters.AddWithValue("@leftNumber7", left7);
+                            cmd2.Parameters.AddWithValue("@rightNumber7", right7);
+                            cmd2.Parameters.AddWithValue("@leftNumber8", left8);
+                            cmd2.Parameters.AddWithValue("@rightNumber8", right8);
+                            cmd2.Parameters.AddWithValue("@leftNumber9", left9);
+                            cmd2.Parameters.AddWithValue("@rightNumber9", right9);
+                            cmd2.Parameters.AddWithValue("@leftNumber10", left10);
+                            cmd2.Parameters.AddWithValue("@rightNumber10", right10);
+                            cmd2.Parameters.AddWithValue("@leftNumber11", left11);
+                            cmd2.Parameters.AddWithValue("@rightNumber11", right11);
+                            cmd2.Parameters.AddWithValue("@leftNumber12", left12);
+                            cmd2.Parameters.AddWithValue("@rightNumber12", right12);
+                            cmd2.Parameters.AddWithValue("@leftNumber13", left13);
+                            cmd2.Parameters.AddWithValue("@rightNumber13", right13);
+                            cmd2.Parameters.AddWithValue("@leftNumber14", left14);
+                            cmd2.Parameters.AddWithValue("@rightNumber14", right14);
+                            cmd2.Parameters.AddWithValue("@leftNumber15", left15);
+                            cmd2.Parameters.AddWithValue("@rightNumber15", right15);
+
+                            cmd2.ExecuteNonQuery();
+
+
+                            merchantCheat = true;
                         }
 
                         // this will submit the order twice to the bank but will have different left and rights revealed
                         if (CustomerChkBx.Checked == true)
                         {
-                            // get the selection from the table
-                            string tempQuery = "SELECT * FROM [dbo].[TempPayment]";
+                            // Give the payment to the bank
+                            string TwiceQuery = "INSERT INTO [dbo].[UnblindedSelection]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
 
-                            using SqlCommand cmdTemp = new SqlCommand(tempQuery, con);
-                            using SqlDataReader tempReader = cmdTemp.ExecuteReader();
+                            SqlCommand cmdTwice = new SqlCommand(TwiceQuery, con);
 
-                            int tempIndex = 0;
-                            string tempAmountString = "";
-                            string tempSerialNumberString = "";
-                            string tempLeft1 = "";
-                            string tempRight1 = "";
-                            string tempLeft2 = "";
-                            string tempRight2 = "";
-                            string tempLeft3 = "";
-                            string tempRight3 = "";
-                            string tempLeft4 = "";
-                            string tempRight4 = "";
-                            string tempLeft5 = "";
-                            string tempRight5 = "";
-                            string tempLeft6 = "";
-                            string tempRight6 = "";
-                            string tempLeft7 = "";
-                            string tempRight7 = "";
-                            string tempLeft8 = "";
-                            string tempRight8 = "";
-                            string tempLeft9 = "";
-                            string tempRight9 = "";
-                            string tempLeft10 = "";
-                            string tempRight10 = "";
-                            string tempLeft11 = "";
-                            string tempRight11 = "";
-                            string tempLeft12 = "";
-                            string tempRight12 = "";
-                            string tempLeft13 = "";
-                            string tempRight13 = "";
-                            string tempLeft14 = "";
-                            string tempRight14 = "";
-                            string tempLeft15 = "";
-                            string tempRight15 = "";
+                            // Insert them to ArchivedPayments
+                            cmdTwice.Parameters.AddWithValue("@index", index);
+                            cmdTwice.Parameters.AddWithValue("@moneyAmount", amountString);
+                            cmdTwice.Parameters.AddWithValue("@serialNumber", serialNumberString);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber1", left1);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber1", right1);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber2", left2);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber2", right2);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber3", left3);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber3", right3);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber4", left4);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber4", right4);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber5", left5);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber5", right5);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber6", left6);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber6", right6);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber7", left7);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber7", right7);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber8", left8);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber8", right8);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber9", left9);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber9", right9);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber10", left10);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber10", right10);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber11", left11);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber11", right11);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber12", left12);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber12", right12);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber13", left13);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber13", right13);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber14", left14);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber14", right14);
+                            cmdTwice.Parameters.AddWithValue("@leftNumber15", left15);
+                            cmdTwice.Parameters.AddWithValue("@rightNumber15", right15);
 
-                            while (tempReader.Read())
-                            {
-                                tempIndex = tempReader.GetInt32(0);
-                                tempAmountString = tempReader.GetString(1);
-                                tempSerialNumberString = tempReader.GetString(2);
-                                tempLeft1 = tempReader.GetString(3);
-                                tempRight1 = tempReader.GetString(4);
-                                tempLeft2 = tempReader.GetString(5);
-                                tempRight2 = tempReader.GetString(6);
-                                tempLeft3 = tempReader.GetString(7);
-                                tempRight3 = tempReader.GetString(8);
-                                tempLeft4 = tempReader.GetString(9);
-                                tempRight4 = tempReader.GetString(10);
-                                tempLeft5 = tempReader.GetString(11);
-                                tempRight5 = tempReader.GetString(12);
-                                tempLeft6 = tempReader.GetString(13);
-                                tempRight6 = tempReader.GetString(14);
-                                tempLeft7 = tempReader.GetString(15);
-                                tempRight7 = tempReader.GetString(16);
-                                tempLeft8 = tempReader.GetString(17);
-                                tempRight8 = tempReader.GetString(18);
-                                tempLeft9 = tempReader.GetString(19);
-                                tempRight9 = tempReader.GetString(20);
-                                tempLeft10 = tempReader.GetString(21);
-                                tempRight10 = tempReader.GetString(22);
-                                tempLeft11 = tempReader.GetString(23);
-                                tempRight11 = tempReader.GetString(24);
-                                tempLeft12 = tempReader.GetString(25);
-                                tempRight12 = tempReader.GetString(26);
-                                tempLeft13 = tempReader.GetString(27);
-                                tempRight13 = tempReader.GetString(28);
-                                tempLeft14 = tempReader.GetString(29);
-                                tempRight14 = tempReader.GetString(30);
-                                tempLeft15 = tempReader.GetString(31);
-                                tempRight15 = tempReader.GetString(32);
-                            }
-                            tempReader.Close();
+                            cmdTwice.ExecuteNonQuery();
+
+                            // declare the path to the public key and load it in
+                            rsa.LoadPublicFromXml(publicPath);
+
+                            byte[] byteSerial = rsa.reveal(rsa.ConvertToBigInt(serialNumberString));
+
+                            string serialNumber = Encoding.UTF8.GetString(byteSerial);
 
                             for (int i = 1; i <= 15; i++)
                             {
-                                Random rand = new Random();
                                 int selection = rand.Next(1, 3);
+                                string value = "";
 
                                 if (selection == 1)
                                 {
                                     string revealQuery = "SELECT * FROM [dbo].[MoneyOrder] WHERE [serialNumber] = @serialNumber";
 
                                     using SqlCommand revealCmd = new SqlCommand(revealQuery, con);
-                                    revealCmd.Parameters.AddWithValue("@serialNumber", serialNumberString);
+                                    revealCmd.Parameters.AddWithValue("@serialNumber", serialNumber);
                                     using SqlDataReader revealReader = revealCmd.ExecuteReader();
 
                                     if (revealReader.Read())
                                     {
-                                        string leftValue = revealReader.GetInt32(i + 2).ToString();
                                         // i + 2 because the left values start at index 3 in the database
-                                        switch (i)
-                                        {
-                                            case 1:
-                                                tempLeft1 = leftValue;
-                                                break;
-                                            case 2:
-                                                tempLeft2 = leftValue;
-                                                break;
-                                            case 3:
-                                                tempLeft3 = leftValue;
-                                                break;
-                                            case 4:
-                                                tempLeft4 = leftValue;
-                                                break;
-                                            case 5:
-                                                tempLeft5 = leftValue;
-                                                break;
-                                            case 6:
-                                                tempLeft6 = leftValue;
-                                                break;
-                                            case 7:
-                                                tempLeft7 = leftValue;
-                                                break;
-                                            case 8:
-                                                tempLeft8 = leftValue;
-                                                break;
-                                            case 9:
-                                                tempLeft9 = leftValue;
-                                                break;
-                                            case 10:
-                                                tempLeft10 = leftValue;
-                                                break;
-                                            case 11:
-                                                tempLeft11 = leftValue;
-                                                break;
-                                            case 12:
-                                                tempLeft12 = leftValue;
-                                                break;
-                                            case 13:
-                                                tempLeft13 = leftValue;
-                                                break;
-                                            case 14:
-                                                tempLeft14 = leftValue;
-                                                break;
-                                            case 15:
-                                                tempLeft15 = leftValue;
-                                                break;
-                                        }
+                                        value = revealReader.GetInt32(i + 2).ToString();
+                                        leftValues.Add(value);
+                                        rightValues.Add("");
                                     }
                                     revealReader.Close();
                                 }
@@ -422,158 +491,64 @@ namespace Merchant
                                     string revealQuery = "SELECT * FROM [dbo].[MoneyOrder] WHERE [serialNumber] = @serialNumber";
 
                                     using SqlCommand revealCmd = new SqlCommand(revealQuery, con);
-                                    revealCmd.Parameters.AddWithValue("@serialNumber", serialNumberString);
+                                    revealCmd.Parameters.AddWithValue("@serialNumber", serialNumber);
                                     using SqlDataReader revealReader = revealCmd.ExecuteReader();
 
                                     if (revealReader.Read())
                                     {
-                                        string rightValue = revealReader.GetInt32(i + 3).ToString();
                                         // i + 3 because the right values start at index 4 in the database
-                                        switch (i)
-                                        {
-                                            case 1:
-                                                tempRight1 = rightValue;
-                                                break;
-                                            case 2:
-                                                tempRight2 = rightValue;
-                                                break;
-                                            case 3:
-                                                tempRight3 = rightValue;
-                                                break;
-                                            case 4:
-                                                tempRight4 = rightValue;
-                                                break;
-                                            case 5:
-                                                tempRight5 = rightValue;
-                                                break;
-                                            case 6:
-                                                tempRight6 = rightValue;
-                                                break;
-                                            case 7:
-                                                tempRight7 = rightValue;
-                                                break;
-                                            case 8:
-                                                tempRight8 = rightValue;
-                                                break;
-                                            case 9:
-                                                tempRight9 = rightValue;
-                                                break;
-                                            case 10:
-                                                tempRight10 = rightValue;
-                                                break;
-                                            case 11:
-                                                tempRight11 = rightValue;
-                                                break;
-                                            case 12:
-                                                tempRight12 = rightValue;
-                                                break;
-                                            case 13:
-                                                tempRight13 = rightValue;
-                                                break;
-                                            case 14:
-                                                tempRight14 = rightValue;
-                                                break;
-                                            case 15:
-                                                tempRight15 = rightValue;
-                                                break;
-                                        }
+                                        value = revealReader.GetInt32(i + 3).ToString();
+                                        rightValues.Add(value);
+                                        leftValues.Add("");
                                     }
                                     revealReader.Close();
                                 }
                             }
 
-                            // delete previous Payment table elements
-                            string delQuery = "DELETE FROM [dbo].[TempPayment]";
-                            SqlCommand comm2 = new SqlCommand(delQuery, con);
-                            comm2.ExecuteNonQuery();
-
                             // put the data into the archivedpayment table
-                            string tempCmdQuery = "INSERT INTO [dbo].[ArchivedPayments]([moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
+                            string tempCmdQuery = "INSERT INTO [dbo].[RevealedValues]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
 
                             SqlCommand tempCmdPayment = new SqlCommand(tempCmdQuery, con);
 
                             // Insert them to archivedpayment
-                            tempCmdPayment.Parameters.AddWithValue("@moneyAmount", tempAmountString);
-                            tempCmdPayment.Parameters.AddWithValue("@serialNumber", tempSerialNumberString);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber1", tempLeft1);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber1", tempRight1);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber2", tempLeft2);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber2", tempRight2);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber3", tempLeft3);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber3", tempRight3);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber4", tempLeft4);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber4", tempRight4);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber5", tempLeft5);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber5", tempRight5);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber6", tempLeft6);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber6", tempRight6);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber7", tempLeft7);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber7", tempRight7);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber8", tempLeft8);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber8", tempRight8);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber9", tempLeft9);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber9", tempRight9);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber10", tempLeft10);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber10", tempRight10);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber11", tempLeft11);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber11", tempRight11);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber12", tempLeft12);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber12", tempRight12);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber13", tempLeft13);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber13", tempRight13);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber14", tempLeft14);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber14", tempRight14);
-                            tempCmdPayment.Parameters.AddWithValue("@leftNumber15", tempLeft15);
-                            tempCmdPayment.Parameters.AddWithValue("@rightNumber15", tempRight15);
+                            tempCmdPayment.Parameters.AddWithValue("@index", index);
+                            tempCmdPayment.Parameters.AddWithValue("@moneyAmount", amount);
+                            tempCmdPayment.Parameters.AddWithValue("@serialNumber", serialNumberString);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber1", leftValues[0]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber1", rightValues[0]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber2", leftValues[1]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber2", rightValues[1]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber3", leftValues[2]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber3", rightValues[2]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber4", leftValues[3]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber4", rightValues[3]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber5", leftValues[4]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber5", rightValues[4]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber6", leftValues[5]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber6", rightValues[5]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber7", leftValues[6]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber7", rightValues[6]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber8", leftValues[7]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber8", rightValues[7]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber9", leftValues[8]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber9", rightValues[8]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber10", leftValues[9]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber10", rightValues[9]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber11", leftValues[10]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber11", rightValues[10]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber12", leftValues[11]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber12", rightValues[11]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber13", leftValues[12]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber13", rightValues[12]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber14", leftValues[13]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber14", rightValues[13]);
+                            tempCmdPayment.Parameters.AddWithValue("@leftNumber15", leftValues[14]);
+                            tempCmdPayment.Parameters.AddWithValue("@rightNumber15", rightValues[14]);
 
                             tempCmdPayment.ExecuteNonQuery();
+
+                            customerCheat = true;
                         }
-
-                        // Give the payment to the bank
-                        string paymentQuery = "INSERT INTO [dbo].[ArchivedPayments]([moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
-
-                        SqlCommand cmdPayment = new SqlCommand(paymentQuery, con);
-
-                        // Insert them to ArchivedPayments
-                        cmdPayment.Parameters.AddWithValue("@moneyAmount", amountString);
-                        cmdPayment.Parameters.AddWithValue("@serialNumber", serialNumberString);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber1", left1);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber1", right1);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber2", left2);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber2", right2);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber3", left3);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber3", right3);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber4", left4);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber4", right4);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber5", left5);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber5", right5);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber6", left6);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber6", right6);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber7", left7);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber7", right7);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber8", left8);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber8", right8);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber9", left9);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber9", right9);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber10", left10);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber10", right10);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber11", left11);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber11", right11);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber12", left12);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber12", right12);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber13", left13);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber13", right13);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber14", left14);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber14", right14);
-                        cmdPayment.Parameters.AddWithValue("@leftNumber15", left15);
-                        cmdPayment.Parameters.AddWithValue("@rightNumber15", right15);
-
-                        cmdPayment.ExecuteNonQuery();
-
-                        // delete previous Payment table elements
-                        string deleteQuery = "DELETE FROM [dbo].[Payment]";
-                        SqlCommand comm = new SqlCommand(deleteQuery, con);
-                        comm.ExecuteNonQuery();
 
 
                         // Create a string to print the items bought and sort them properly to fit a sentence
@@ -603,7 +578,7 @@ namespace Merchant
                             itemsString = string.Join(", ", items);
                         }
 
-                        MessageBox.Show("The merchant received a money order for $" + Amount + "\nThe customer received " + itemsString, "Success");
+                        updateBox.AppendText($"The merchant received a money order for ${Amount}. The customer received {itemsString}\n");
                     }
                     con.Close();
                 }
@@ -616,6 +591,8 @@ namespace Merchant
 
         private void RevealBtn_Click(object sender, EventArgs e)
         {
+            UpdateLabels();
+
             // Call the RSAEncryption class
             RSAEncryption rsa = new RSAEncryption();
 
@@ -758,11 +735,6 @@ namespace Merchant
 
             cmdPayment.ExecuteNonQuery();
 
-            // delete previous Payment table elements
-            string delQuery = "DELETE FROM [dbo].[UnblindedSelection]";
-            SqlCommand comm2 = new SqlCommand(delQuery, con);
-            comm2.ExecuteNonQuery();
-
 
             // put the data into the temppayment table
             string tempQuery = "INSERT INTO [dbo].[TempPayment]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
@@ -805,21 +777,33 @@ namespace Merchant
             cmdTemp.Parameters.AddWithValue("@rightNumber15", right15);
 
             cmdTemp.ExecuteNonQuery();
+
+            UpdateLabels();
+
+            updateBox.AppendText($"The money order is decrypted, the amount is ${amount}\n");
         }
 
         private void HashBtn_Click(object sender, EventArgs e)
         {
+            UpdateLabels();
+
             SqlConnection con = new SqlConnection(connectionString);
             con.Open();
 
             // get the selection from the table
-            string query = "SELECT * FROM [dbo].[Payment]";
+            string query = "SELECT * FROM [dbo].[UnblindedSelection]";
+
+            Random rand = new Random();
+
+            // make left and right values list
+            List<string> leftValues = new List<string>();
+            List<string> rightValues = new List<string>();
 
             using SqlCommand cmd = new SqlCommand(query, con);
             using SqlDataReader reader = cmd.ExecuteReader();
 
             int index = 0;
-            string amountString = "";
+            string amount = "";
             string serialNumberString = "";
             string left1 = "";
             string right1 = "";
@@ -855,106 +839,40 @@ namespace Merchant
             while (reader.Read())
             {
                 index = reader.GetInt32(0);
-                amountString = reader.GetString(1);
+                amount = reader.GetString(1);
                 serialNumberString = reader.GetString(2);
-                left1 = reader.GetString(3);
-                right1 = reader.GetString(4);
-                left2 = reader.GetString(5);
-                right2 = reader.GetString(6);
-                left3 = reader.GetString(7);
-                right3 = reader.GetString(8);
-                left4 = reader.GetString(9);
-                right4 = reader.GetString(10);
-                left5 = reader.GetString(11);
-                right5 = reader.GetString(12);
-                left6 = reader.GetString(13);
-                right6 = reader.GetString(14);
-                left7 = reader.GetString(15);
-                right7 = reader.GetString(16);
-                left8 = reader.GetString(17);
-                right8 = reader.GetString(18);
-                left9 = reader.GetString(19);
-                right9 = reader.GetString(20);
-                left10 = reader.GetString(21);
-                right10 = reader.GetString(22);
-                left11 = reader.GetString(23);
-                right11 = reader.GetString(24);
-                left12 = reader.GetString(25);
-                right12 = reader.GetString(26);
-                left13 = reader.GetString(27);
-                right13 = reader.GetString(28);
-                left14 = reader.GetString(29);
-                right14 = reader.GetString(30);
-                left15 = reader.GetString(31);
-                right15 = reader.GetString(32);
             }
             reader.Close();
 
+            RSAEncryption rsa = new();
+
+            // declare the path to the public key and load it in
+            string publicPath = @"C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Merchant\bin\Debug\net7.0-windows\publickey.xml";
+            rsa.LoadPublicFromXml(publicPath);
+
+            byte[] byteSerial = rsa.reveal(rsa.ConvertToBigInt(serialNumberString));
+
+            string serialNumber = Encoding.UTF8.GetString(byteSerial);
+
             for (int i = 1; i <= 15; i++)
             {
-                Random rand = new Random();
                 int selection = rand.Next(1, 3);
+                string value = "";
 
                 if (selection == 1)
                 {
                     string revealQuery = "SELECT * FROM [dbo].[MoneyOrder] WHERE [serialNumber] = @serialNumber";
 
                     using SqlCommand revealCmd = new SqlCommand(revealQuery, con);
-                    revealCmd.Parameters.AddWithValue("@serialNumber", serialNumberString);
+                    revealCmd.Parameters.AddWithValue("@serialNumber", serialNumber);
                     using SqlDataReader revealReader = revealCmd.ExecuteReader();
 
                     if (revealReader.Read())
                     {
-                        string leftValue = revealReader.GetInt32(i + 2).ToString();
                         // i + 2 because the left values start at index 3 in the database
-                        switch (i)
-                        {
-                            case 1:
-                                left1 = leftValue;
-                                break;
-                            case 2:
-                                left2 = leftValue;
-                                break;
-                            case 3:
-                                left3 = leftValue;
-                                break;
-                            case 4:
-                                left4 = leftValue;
-                                break;
-                            case 5:
-                                left5 = leftValue;
-                                break;
-                            case 6:
-                                left6 = leftValue;
-                                break;
-                            case 7:
-                                left7 = leftValue;
-                                break;
-                            case 8:
-                                left8 = leftValue;
-                                break;
-                            case 9:
-                                left9 = leftValue;
-                                break;
-                            case 10:
-                                left10 = leftValue;
-                                break;
-                            case 11:
-                                left11 = leftValue;
-                                break;
-                            case 12:
-                                left12 = leftValue;
-                                break;
-                            case 13:
-                                left13 = leftValue;
-                                break;
-                            case 14:
-                                left14 = leftValue;
-                                break;
-                            case 15:
-                                left15 = leftValue;
-                                break;
-                        }
+                        value = revealReader.GetInt32(i + 2).ToString();
+                        leftValues.Add(value);
+                        rightValues.Add("");
                     }
                     revealReader.Close();
                 }
@@ -963,112 +881,344 @@ namespace Merchant
                     string revealQuery = "SELECT * FROM [dbo].[MoneyOrder] WHERE [serialNumber] = @serialNumber";
 
                     using SqlCommand revealCmd = new SqlCommand(revealQuery, con);
-                    revealCmd.Parameters.AddWithValue("@serialNumber", serialNumberString);
+                    revealCmd.Parameters.AddWithValue("@serialNumber", serialNumber);
                     using SqlDataReader revealReader = revealCmd.ExecuteReader();
 
                     if (revealReader.Read())
                     {
-                        string rightValue = revealReader.GetInt32(i + 3).ToString();
                         // i + 3 because the right values start at index 4 in the database
-                        switch (i)
-                        {
-                            case 1:
-                                right1 = rightValue;
-                                break;
-                            case 2:
-                                right2 = rightValue;
-                                break;
-                            case 3:
-                                right3 = rightValue;
-                                break;
-                            case 4:
-                                right4 = rightValue;
-                                break;
-                            case 5:
-                                right5 = rightValue;
-                                break;
-                            case 6:
-                                right6 = rightValue;
-                                break;
-                            case 7:
-                                right7 = rightValue;
-                                break;
-                            case 8:
-                                right8 = rightValue;
-                                break;
-                            case 9:
-                                right9 = rightValue;
-                                break;
-                            case 10:
-                                right10 = rightValue;
-                                break;
-                            case 11:
-                                right11 = rightValue;
-                                break;
-                            case 12:
-                                right12 = rightValue;
-                                break;
-                            case 13:
-                                right13 = rightValue;
-                                break;
-                            case 14:
-                                right14 = rightValue;
-                                break;
-                            case 15:
-                                right15 = rightValue;
-                                break;
-                        }
+                        value = revealReader.GetInt32(i + 3).ToString();
+                        rightValues.Add(value);
+                        leftValues.Add("");
                     }
                     revealReader.Close();
                 }
             }
 
-            // delete previous Payment table elements
-            string delQuery = "DELETE FROM [dbo].[Payment]";
-            SqlCommand comm2 = new SqlCommand(delQuery, con);
-            comm2.ExecuteNonQuery();
+            // put the data into the archivedpayment table
+            string tempCmdQuery = "INSERT INTO [dbo].[RevealedValues]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
 
-            // put the data into the payment table
-            string signedQuery = "INSERT INTO [dbo].[Payment]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
+            SqlCommand tempCmdPayment = new SqlCommand(tempCmdQuery, con);
 
-            SqlCommand cmdPayment = new SqlCommand(signedQuery, con);
+            // Insert them to archivedpayment
+            tempCmdPayment.Parameters.AddWithValue("@index", index);
+            tempCmdPayment.Parameters.AddWithValue("@moneyAmount", amount);
+            tempCmdPayment.Parameters.AddWithValue("@serialNumber", serialNumberString);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber1", leftValues[0]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber1", rightValues[0]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber2", leftValues[1]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber2", rightValues[1]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber3", leftValues[2]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber3", rightValues[2]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber4", leftValues[3]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber4", rightValues[3]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber5", leftValues[4]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber5", rightValues[4]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber6", leftValues[5]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber6", rightValues[5]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber7", leftValues[6]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber7", rightValues[6]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber8", leftValues[7]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber8", rightValues[7]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber9", leftValues[8]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber9", rightValues[8]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber10", leftValues[9]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber10", rightValues[9]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber11", leftValues[10]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber11", rightValues[10]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber12", leftValues[11]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber12", rightValues[11]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber13", leftValues[12]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber13", rightValues[12]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber14", leftValues[13]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber14", rightValues[13]);
+            tempCmdPayment.Parameters.AddWithValue("@leftNumber15", leftValues[14]);
+            tempCmdPayment.Parameters.AddWithValue("@rightNumber15", rightValues[14]);
 
-            // Insert them to payment
-            cmdPayment.Parameters.AddWithValue("@index", index);
-            cmdPayment.Parameters.AddWithValue("@moneyAmount", amountString);
-            cmdPayment.Parameters.AddWithValue("@serialNumber", serialNumberString);
-            cmdPayment.Parameters.AddWithValue("@leftNumber1", left1);
-            cmdPayment.Parameters.AddWithValue("@rightNumber1", right1);
-            cmdPayment.Parameters.AddWithValue("@leftNumber2", left2);
-            cmdPayment.Parameters.AddWithValue("@rightNumber2", right2);
-            cmdPayment.Parameters.AddWithValue("@leftNumber3", left3);
-            cmdPayment.Parameters.AddWithValue("@rightNumber3", right3);
-            cmdPayment.Parameters.AddWithValue("@leftNumber4", left4);
-            cmdPayment.Parameters.AddWithValue("@rightNumber4", right4);
-            cmdPayment.Parameters.AddWithValue("@leftNumber5", left5);
-            cmdPayment.Parameters.AddWithValue("@rightNumber5", right5);
-            cmdPayment.Parameters.AddWithValue("@leftNumber6", left6);
-            cmdPayment.Parameters.AddWithValue("@rightNumber6", right6);
-            cmdPayment.Parameters.AddWithValue("@leftNumber7", left7);
-            cmdPayment.Parameters.AddWithValue("@rightNumber7", right7);
-            cmdPayment.Parameters.AddWithValue("@leftNumber8", left8);
-            cmdPayment.Parameters.AddWithValue("@rightNumber8", right8);
-            cmdPayment.Parameters.AddWithValue("@leftNumber9", left9);
-            cmdPayment.Parameters.AddWithValue("@rightNumber9", right9);
-            cmdPayment.Parameters.AddWithValue("@leftNumber10", left10);
-            cmdPayment.Parameters.AddWithValue("@rightNumber10", right10);
-            cmdPayment.Parameters.AddWithValue("@leftNumber11", left11);
-            cmdPayment.Parameters.AddWithValue("@rightNumber11", right11);
-            cmdPayment.Parameters.AddWithValue("@leftNumber12", left12);
-            cmdPayment.Parameters.AddWithValue("@rightNumber12", right12);
-            cmdPayment.Parameters.AddWithValue("@leftNumber13", left13);
-            cmdPayment.Parameters.AddWithValue("@rightNumber13", right13);
-            cmdPayment.Parameters.AddWithValue("@leftNumber14", left14);
-            cmdPayment.Parameters.AddWithValue("@rightNumber14", right14);
-            cmdPayment.Parameters.AddWithValue("@leftNumber15", left15);
-            cmdPayment.Parameters.AddWithValue("@rightNumber15", right15);
+            tempCmdPayment.ExecuteNonQuery();
 
-            cmdPayment.ExecuteNonQuery();
+            UpdateLabels();
+
+            updateBox.AppendText("Random left and right values in the money order are revealed\n");
+        }
+
+        private void ToBankBtn_Click(object sender, EventArgs e)
+        {
+            UpdateLabels();
+
+            if (merchantCheat)
+            {
+                updateBox.AppendText("The signed money order and revealed left and rights have been sent to the bank twice\n");
+            }
+            else if (customerCheat)
+            {
+                updateBox.AppendText("The signed money order has been sent to the bank and the left and rights have been revealed differently for each money order sent");
+            }
+            else
+            {
+                updateBox.AppendText("The signed money order and revealed left and rights have been sent to the bank\n");
+            }
+        }
+
+        private void VerifyHashesBtn_Click(object sender, EventArgs e)
+        {
+            UpdateLabels();
+
+            // this is our bool we return true if hashes match and false if they dont
+            bool cheated = false;
+
+            SqlConnection con = new SqlConnection(connectionString);
+            con.Open();
+
+            // join the two tables of MoneyOrder and ArchivedBlinds on the serialNumber
+            string selectQuery = "SELECT * FROM [dbo].[MoneyOrder] JOIN [dbo].[HashMoneyOrder] ON [dbo].[MoneyOrder].[serialNumber] = [dbo].[HashMoneyOrder].[serialNumber]";
+
+            using SqlCommand cmd = new SqlCommand(selectQuery, con);
+            using SqlDataReader reader = cmd.ExecuteReader();
+
+
+            // Choose a random order to be the selection and we wont check that order
+            Random rand = new();
+
+            // if there are no blinds, return a message that informs the user and then return the data from the table
+            if (!reader.HasRows)
+            {
+                reader.Close();
+                MessageBox.Show("The tables did not join properly");
+            }
+            else
+            {
+                // read the data from money order to get money amount and serial
+                while (reader.Read())
+                {
+                    int left1 = reader.GetInt32(3);
+                    int right1 = reader.GetInt32(4);
+                    int left2 = reader.GetInt32(5);
+                    int right2 = reader.GetInt32(6);
+                    int left3 = reader.GetInt32(7);
+                    int right3 = reader.GetInt32(8);
+                    int left4 = reader.GetInt32(9);
+                    int right4 = reader.GetInt32(10);
+                    int left5 = reader.GetInt32(11);
+                    int right5 = reader.GetInt32(12);
+                    int left6 = reader.GetInt32(13);
+                    int right6 = reader.GetInt32(14);
+                    int left7 = reader.GetInt32(15);
+                    int right7 = reader.GetInt32(16);
+                    int left8 = reader.GetInt32(17);
+                    int right8 = reader.GetInt32(18);
+                    int left9 = reader.GetInt32(19);
+                    int right9 = reader.GetInt32(20);
+                    int left10 = reader.GetInt32(21);
+                    int right10 = reader.GetInt32(22);
+                    int left11 = reader.GetInt32(23);
+                    int right11 = reader.GetInt32(24);
+                    int left12 = reader.GetInt32(25);
+                    int right12 = reader.GetInt32(26);
+                    int left13 = reader.GetInt32(27);
+                    int right13 = reader.GetInt32(28);
+                    int left14 = reader.GetInt32(29);
+                    int right14 = reader.GetInt32(30);
+                    int left15 = reader.GetInt32(31);
+                    int right15 = reader.GetInt32(32);
+                    string tempLeft1 = reader.GetString(36);
+                    string tempRight1 = reader.GetString(37);
+                    string tempLeft2 = reader.GetString(38);
+                    string tempRight2 = reader.GetString(39);
+                    string tempLeft3 = reader.GetString(40);
+                    string tempRight3 = reader.GetString(41);
+                    string tempLeft4 = reader.GetString(42);
+                    string tempRight4 = reader.GetString(43);
+                    string tempLeft5 = reader.GetString(44);
+                    string tempRight5 = reader.GetString(45);
+                    string tempLeft6 = reader.GetString(46);
+                    string tempRight6 = reader.GetString(47);
+                    string tempLeft7 = reader.GetString(48);
+                    string tempRight7 = reader.GetString(49);
+                    string tempLeft8 = reader.GetString(50);
+                    string tempRight8 = reader.GetString(51);
+                    string tempLeft9 = reader.GetString(52);
+                    string tempRight9 = reader.GetString(53);
+                    string tempLeft10 = reader.GetString(54);
+                    string tempRight10 = reader.GetString(55);
+                    string tempLeft11 = reader.GetString(56);
+                    string tempRight11 = reader.GetString(57);
+                    string tempLeft12 = reader.GetString(58);
+                    string tempRight12 = reader.GetString(59);
+                    string tempLeft13 = reader.GetString(60);
+                    string tempRight13 = reader.GetString(61);
+                    string tempLeft14 = reader.GetString(62);
+                    string tempRight14 = reader.GetString(63);
+                    string tempLeft15 = reader.GetString(64);
+                    string tempRight15 = reader.GetString(65);
+
+                    // hash the left and right numbers
+                    SHA256 sha256 = SHA256.Create();
+                    string leftHash1 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left1.ToString()))));
+                    string rightHash1 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right1.ToString()))));
+                    string leftHash2 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left2.ToString()))));
+                    string rightHash2 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right2.ToString()))));
+                    string leftHash3 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left3.ToString()))));
+                    string rightHash3 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right3.ToString()))));
+                    string leftHash4 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left4.ToString()))));
+                    string rightHash4 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right4.ToString()))));
+                    string leftHash5 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left5.ToString()))));
+                    string rightHash5 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right5.ToString()))));
+                    string leftHash6 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left6.ToString()))));
+                    string rightHash6 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right6.ToString()))));
+                    string leftHash7 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left7.ToString()))));
+                    string rightHash7 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right7.ToString()))));
+                    string leftHash8 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left8.ToString()))));
+                    string rightHash8 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right8.ToString()))));
+                    string leftHash9 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left9.ToString()))));
+                    string rightHash9 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right9.ToString()))));
+                    string leftHash10 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left10.ToString()))));
+                    string rightHash10 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right10.ToString()))));
+                    string leftHash11 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left11.ToString()))));
+                    string rightHash11 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right11.ToString()))));
+                    string leftHash12 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left12.ToString()))));
+                    string rightHash12 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right12.ToString()))));
+                    string leftHash13 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left13.ToString()))));
+                    string rightHash13 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right13.ToString()))));
+                    string leftHash14 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left14.ToString()))));
+                    string rightHash14 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right14.ToString()))));
+                    string leftHash15 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(left15.ToString()))));
+                    string rightHash15 = (Convert.ToBase64String(sha256.ComputeHash(Encoding.UTF8.GetBytes(right15.ToString()))));
+
+
+                    for (int i = 1; i <= 15; i++)
+                    {
+                        string checkleft1 = "";
+                        string checkright1 = "";
+                        string checkleft2 = "";
+                        string checkright2 = "";
+
+                        switch (i)
+                        {
+                            case 1:
+                                checkleft1 = tempLeft1;
+                                checkright1 = tempRight1;
+                                checkleft2 = leftHash1;
+                                checkright2 = rightHash1;
+                                break;
+                            case 2:
+                                checkleft1 = tempLeft2;
+                                checkright1 = tempRight2;
+                                checkleft2 = leftHash2;
+                                checkright2 = rightHash2;
+                                break;
+                            case 3:
+                                checkleft1 = tempLeft3;
+                                checkright1 = tempRight3;
+                                checkleft2 = leftHash3;
+                                checkright2 = rightHash3;
+                                break;
+                            case 4:
+                                checkleft1 = tempLeft4;
+                                checkright1 = tempRight4;
+                                checkleft2 = leftHash4;
+                                checkright2 = rightHash4;
+                                break;
+                            case 5:
+                                checkleft1 = tempLeft5;
+                                checkright1 = tempRight5;
+                                checkleft2 = leftHash5;
+                                checkright2 = rightHash5;
+                                break;
+                            case 6:
+                                checkleft1 = tempLeft6;
+                                checkright1 = tempRight6;
+                                checkleft2 = leftHash6;
+                                checkright2 = rightHash6;
+                                break;
+                            case 7:
+                                checkleft1 = tempLeft7;
+                                checkright1 = tempRight7;
+                                checkleft2 = leftHash7;
+                                checkright2 = rightHash7;
+                                break;
+                            case 8:
+                                checkleft1 = tempLeft8;
+                                checkright1 = tempRight8;
+                                checkleft2 = leftHash8;
+                                checkright2 = rightHash8;
+                                break;
+                            case 9:
+                                checkleft1 = tempLeft9;
+                                checkright1 = tempRight9;
+                                checkleft2 = leftHash9;
+                                checkright2 = rightHash9;
+                                break;
+                            case 10:
+                                checkleft1 = tempLeft10;
+                                checkright1 = tempRight10;
+                                checkleft2 = leftHash10;
+                                checkright2 = rightHash10;
+                                break;
+                            case 11:
+                                checkleft1 = tempLeft11;
+                                checkright1 = tempRight11;
+                                checkleft2 = leftHash11;
+                                checkright2 = rightHash11;
+                                break;
+                            case 12:
+                                checkleft1 = tempLeft12;
+                                checkright1 = tempRight12;
+                                checkleft2 = leftHash12;
+                                checkright2 = rightHash12;
+                                break;
+                            case 13:
+                                checkleft1 = tempLeft13;
+                                checkright1 = tempRight13;
+                                checkleft2 = leftHash13;
+                                checkright2 = rightHash13;
+                                break;
+                            case 14:
+                                checkleft1 = tempLeft14;
+                                checkright1 = tempRight14;
+                                checkleft2 = leftHash14;
+                                checkright2 = rightHash14;
+                                break;
+                            case 15:
+                                checkleft1 = tempLeft15;
+                                checkright1 = tempRight15;
+                                checkleft2 = leftHash15;
+                                checkright2 = rightHash15;
+                                break;
+                        }
+
+                        //MessageBox.Show(checkleft1 + " " + checkleft2, "Left");
+                        //MessageBox.Show(checkright1 + " " + checkright2, "Right");
+                        if (checkleft1 == checkleft2 && checkright1 == checkright2 && !cheated)
+                        {
+                            cheated = false;
+                        }
+                        else
+                        {
+                            cheated = true;
+                            break;
+                        }
+                    }
+                }
+                reader.Close();
+            }
+
+            if (cheated)
+            {
+                updateBox.AppendText("The customer sent fake revealed hashes\n");
+            }
+            else
+            {
+                updateBox.AppendText("The revealed values match the hashed values\n");
+            }
+        }
+
+        private void RefreshBtn_Click(object sender, EventArgs e)
+        {
+            if (LoggedIn)
+            {
+                UpdateLabels();
+            }
         }
     }
 }

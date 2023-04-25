@@ -7,6 +7,7 @@ using System.IO;
 using System.Data;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement.StartPanel;
 using System.Security.Cryptography.Pkcs;
+using System.Drawing;
 
 namespace Customer
 {
@@ -17,11 +18,12 @@ namespace Customer
             InitializeComponent();
         }
 
-        public string connectionString = "Data Source=BEN_T\\SQLEXPRESS;Initial Catalog=DigitalCash;Integrated Security=True";
+        public string connectionString = "Data Source=LAPTOP-UOPDFGH4\\SQLEXPRESS;Initial Catalog=DigitalCash;Integrated Security=True";
         public string Username { get; set; }
         public int Balance { get; set; }
         public bool LoggedIn { get; set; }
         public int ID { get; set; }
+        public string FraudType { get; set; }
         public static CustomerForm SelectedCustomer { get; set; }
 
         public void Select()
@@ -31,22 +33,41 @@ namespace Customer
 
         private void UpdateLabels()
         {
+            // update the balance
+            SqlConnection con = new SqlConnection(connectionString);
+            con.Open();
+
+            string query = "SELECT [balance],[ID] FROM LoginCredentials WHERE username = @username";
+
+            SqlCommand cmd = new SqlCommand(query, con);
+
+            cmd.Parameters.AddWithValue("@username", Username);
+
+            using (SqlDataReader reader = cmd.ExecuteReader())
+            {
+                while (reader.Read())
+                {
+                    Balance = reader.GetInt32(0);
+                }
+                con.Close();
+            }
+
             usernameLbl.Text = Username;
             balanceAmountLbl.Text = "$" + Balance;
-        }
-
-        private void AddCustomerBtn_Click(object sender, EventArgs e)
-        {
-            AddCustomer addCust = new();
-            addCust.Show();
         }
 
         private void MoneyOrderBtn_Click(object sender, EventArgs e)
         {
             if (LoggedIn)
             {
+                UpdateLabels();
+
                 MoneyOrder newOrder = new();
+
                 newOrder.Show();
+
+                // wait for the OrderComplete event to finish
+                newOrder.OrderComplete += new EventHandler(MoneyOrderComplete);
             }
             else
             {
@@ -54,21 +75,25 @@ namespace Customer
             }
         }
 
+        private void MoneyOrderComplete(object sender, EventArgs e)
+        {
+            UpdateLabels();
+            updateBox.AppendText("Generated 100 money orders\n");
+            updateBox.AppendText(FraudType + "\n");
+        }
+
         private void CustomerLoginBtn_Click(object sender, EventArgs e)
         {
             Login custLogin = new();
             custLogin.ShowDialog(this);
             UpdateLabels();
-        }
-
-        private void EncryptBtn_Click(object sender, EventArgs e)
-        {
-            Encrypt encr = new();
-            encr.Show();
+            updateBox.AppendText($"Logged in as {Username}\n");
         }
 
         private void UnblindBtn_Click(object sender, EventArgs e)
         {
+            UpdateLabels();
+
             // Call the RSAEncryption class
             RSAEncryption rsa = new RSAEncryption();
 
@@ -162,6 +187,36 @@ namespace Customer
             rsa.setBlindFactor(rsa.ConvertToBigInt(blind));
             string unblindedAmount = rsa.unblind(rsa.ConvertToBigInt(amountString));
             string unblindedSerial = rsa.unblind(rsa.ConvertToBigInt(serialNumberString));
+            string unblindLeft1 = rsa.unblind(rsa.ConvertToBigInt(left1));
+            string unblindRight1 = rsa.unblind(rsa.ConvertToBigInt(right1));
+            string unblindLeft2 = rsa.unblind(rsa.ConvertToBigInt(left2));
+            string unblindRight2 = rsa.unblind(rsa.ConvertToBigInt(right2));
+            string unblindLeft3 = rsa.unblind(rsa.ConvertToBigInt(left3));
+            string unblindRight3 = rsa.unblind(rsa.ConvertToBigInt(right3));
+            string unblindLeft4 = rsa.unblind(rsa.ConvertToBigInt(left4));
+            string unblindRight4 = rsa.unblind(rsa.ConvertToBigInt(right4));
+            string unblindLeft5 = rsa.unblind(rsa.ConvertToBigInt(left5));
+            string unblindRight5 = rsa.unblind(rsa.ConvertToBigInt(right5));
+            string unblindLeft6 = rsa.unblind(rsa.ConvertToBigInt(left6));
+            string unblindRight6 = rsa.unblind(rsa.ConvertToBigInt(right6));
+            string unblindLeft7 = rsa.unblind(rsa.ConvertToBigInt(left7));
+            string unblindRight7 = rsa.unblind(rsa.ConvertToBigInt(right7));
+            string unblindLeft8 = rsa.unblind(rsa.ConvertToBigInt(left8));
+            string unblindRight8 = rsa.unblind(rsa.ConvertToBigInt(right8));
+            string unblindLeft9 = rsa.unblind(rsa.ConvertToBigInt(left9));
+            string unblindRight9 = rsa.unblind(rsa.ConvertToBigInt(right9));
+            string unblindLeft10 = rsa.unblind(rsa.ConvertToBigInt(left10));
+            string unblindRight10 = rsa.unblind(rsa.ConvertToBigInt(right10));
+            string unblindLeft11 = rsa.unblind(rsa.ConvertToBigInt(left11));
+            string unblindRight11 = rsa.unblind(rsa.ConvertToBigInt(right11));
+            string unblindLeft12 = rsa.unblind(rsa.ConvertToBigInt(left12));
+            string unblindRight12 = rsa.unblind(rsa.ConvertToBigInt(right12));
+            string unblindLeft13 = rsa.unblind(rsa.ConvertToBigInt(left13));
+            string unblindRight13 = rsa.unblind(rsa.ConvertToBigInt(right13));
+            string unblindLeft14 = rsa.unblind(rsa.ConvertToBigInt(left14));
+            string unblindRight14 = rsa.unblind(rsa.ConvertToBigInt(right14));
+            string unblindLeft15 = rsa.unblind(rsa.ConvertToBigInt(left15));
+            string unblindRight15 = rsa.unblind(rsa.ConvertToBigInt(right15));
 
             // put the unblinded signed data into a new table
             string queryTwo = "INSERT INTO [dbo].[UnblindedSelection]([index],[moneyAmount],[serialNumber],[leftNumber1],[rightNumber1],[leftNumber2],[rightNumber2],[leftNumber3],[rightNumber3],[leftNumber4],[rightNumber4],[leftNumber5],[rightNumber5],[leftNumber6],[rightNumber6],[leftNumber7],[rightNumber7],[leftNumber8],[rightNumber8],[leftNumber9],[rightNumber9],[leftNumber10],[rightNumber10],[leftNumber11],[rightNumber11],[leftNumber12],[rightNumber12],[leftNumber13],[rightNumber13],[leftNumber14],[rightNumber14],[leftNumber15],[rightNumber15]) VALUES(@index,@moneyAmount,@serialNumber,@leftNumber1,@rightNumber1,@leftNumber2,@rightNumber2,@leftNumber3,@rightNumber3,@leftNumber4,@rightNumber4,@leftNumber5,@rightNumber5,@leftNumber6,@rightNumber6,@leftNumber7,@rightNumber7,@leftNumber8,@rightNumber8,@leftNumber9,@rightNumber9,@leftNumber10,@rightNumber10,@leftNumber11,@rightNumber11,@leftNumber12,@rightNumber12,@leftNumber13,@rightNumber13,@leftNumber14,@rightNumber14,@leftNumber15,@rightNumber15)";
@@ -171,38 +226,62 @@ namespace Customer
                 cmdTwo.Parameters.AddWithValue("@index", index);
                 cmdTwo.Parameters.AddWithValue("@moneyAmount", unblindedAmount);
                 cmdTwo.Parameters.AddWithValue("@serialNumber", unblindedSerial);
-                cmdTwo.Parameters.AddWithValue("@leftNumber1", left1);
-                cmdTwo.Parameters.AddWithValue("@rightNumber1", right1);
-                cmdTwo.Parameters.AddWithValue("@leftNumber2", left2);
-                cmdTwo.Parameters.AddWithValue("@rightNumber2", right2);
-                cmdTwo.Parameters.AddWithValue("@leftNumber3", left3);
-                cmdTwo.Parameters.AddWithValue("@rightNumber3", right3);
-                cmdTwo.Parameters.AddWithValue("@leftNumber4", left4);
-                cmdTwo.Parameters.AddWithValue("@rightNumber4", right4);
-                cmdTwo.Parameters.AddWithValue("@leftNumber5", left5);
-                cmdTwo.Parameters.AddWithValue("@rightNumber5", right5);
-                cmdTwo.Parameters.AddWithValue("@leftNumber6", left6);
-                cmdTwo.Parameters.AddWithValue("@rightNumber6", right6);
-                cmdTwo.Parameters.AddWithValue("@leftNumber7", left7);
-                cmdTwo.Parameters.AddWithValue("@rightNumber7", right7);
-                cmdTwo.Parameters.AddWithValue("@leftNumber8", left8);
-                cmdTwo.Parameters.AddWithValue("@rightNumber8", right8);
-                cmdTwo.Parameters.AddWithValue("@leftNumber9", left9);
-                cmdTwo.Parameters.AddWithValue("@rightNumber9", right9);
-                cmdTwo.Parameters.AddWithValue("@leftNumber10", left10);
-                cmdTwo.Parameters.AddWithValue("@rightNumber10", right10);
-                cmdTwo.Parameters.AddWithValue("@leftNumber11", left11);
-                cmdTwo.Parameters.AddWithValue("@rightNumber11", right11);
-                cmdTwo.Parameters.AddWithValue("@leftNumber12", left12);
-                cmdTwo.Parameters.AddWithValue("@rightNumber12", right12);
-                cmdTwo.Parameters.AddWithValue("@leftNumber13", left13);
-                cmdTwo.Parameters.AddWithValue("@rightNumber13", right13);
-                cmdTwo.Parameters.AddWithValue("@leftNumber14", left14);
-                cmdTwo.Parameters.AddWithValue("@rightNumber14", right14);
-                cmdTwo.Parameters.AddWithValue("@leftNumber15", left15);
-                cmdTwo.Parameters.AddWithValue("@rightNumber15", right15);
+                cmdTwo.Parameters.AddWithValue("@leftNumber1", unblindLeft1);
+                cmdTwo.Parameters.AddWithValue("@rightNumber1", unblindRight1);
+                cmdTwo.Parameters.AddWithValue("@leftNumber2", unblindLeft2);
+                cmdTwo.Parameters.AddWithValue("@rightNumber2", unblindRight2);
+                cmdTwo.Parameters.AddWithValue("@leftNumber3", unblindLeft3);
+                cmdTwo.Parameters.AddWithValue("@rightNumber3", unblindRight3);
+                cmdTwo.Parameters.AddWithValue("@leftNumber4", unblindLeft4);
+                cmdTwo.Parameters.AddWithValue("@rightNumber4", unblindRight4);
+                cmdTwo.Parameters.AddWithValue("@leftNumber5", unblindLeft5);
+                cmdTwo.Parameters.AddWithValue("@rightNumber5", unblindRight5);
+                cmdTwo.Parameters.AddWithValue("@leftNumber6", unblindLeft6);
+                cmdTwo.Parameters.AddWithValue("@rightNumber6", unblindRight6);
+                cmdTwo.Parameters.AddWithValue("@leftNumber7", unblindLeft7);
+                cmdTwo.Parameters.AddWithValue("@rightNumber7", unblindRight7);
+                cmdTwo.Parameters.AddWithValue("@leftNumber8", unblindLeft8);
+                cmdTwo.Parameters.AddWithValue("@rightNumber8", unblindRight8);
+                cmdTwo.Parameters.AddWithValue("@leftNumber9", unblindLeft9);
+                cmdTwo.Parameters.AddWithValue("@rightNumber9", unblindRight9);
+                cmdTwo.Parameters.AddWithValue("@leftNumber10", unblindLeft10);
+                cmdTwo.Parameters.AddWithValue("@rightNumber10", unblindRight10);
+                cmdTwo.Parameters.AddWithValue("@leftNumber11", unblindLeft11);
+                cmdTwo.Parameters.AddWithValue("@rightNumber11", unblindRight11);
+                cmdTwo.Parameters.AddWithValue("@leftNumber12", unblindLeft12);
+                cmdTwo.Parameters.AddWithValue("@rightNumber12", unblindRight12);
+                cmdTwo.Parameters.AddWithValue("@leftNumber13", unblindLeft13);
+                cmdTwo.Parameters.AddWithValue("@rightNumber13", unblindRight13);
+                cmdTwo.Parameters.AddWithValue("@leftNumber14", unblindLeft14);
+                cmdTwo.Parameters.AddWithValue("@rightNumber14", unblindRight14);
+                cmdTwo.Parameters.AddWithValue("@leftNumber15", unblindLeft15);
+                cmdTwo.Parameters.AddWithValue("@rightNumber15", unblindRight15);
 
                 cmdTwo.ExecuteNonQuery();
+            }
+
+            UpdateLabels();
+
+            updateBox.AppendText("The signed money order has been unblinded\n");
+        }
+
+        private void ToBankBtn_Click(object sender, EventArgs e)
+        {
+            UpdateLabels();
+            updateBox.AppendText("The money order was sent to the bank\n");
+        }
+
+        private void ToMerchantBtn_Click(object sender, EventArgs e)
+        {
+            UpdateLabels();
+            updateBox.AppendText("The money order was sent to the merchant\n");
+        }
+
+        private void RefreshBtn_Click(object sender, EventArgs e)
+        {
+            if (LoggedIn)
+            {
+                UpdateLabels();
             }
         }
     }

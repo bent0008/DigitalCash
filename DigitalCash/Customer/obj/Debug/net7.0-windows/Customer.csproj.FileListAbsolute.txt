@@ -6,9 +6,7 @@ C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\De
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\runtimes\unix\lib\netcoreapp2.1\System.Data.SqlClient.dll
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\runtimes\win\lib\netcoreapp2.1\System.Data.SqlClient.dll
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.csproj.AssemblyReference.cache
-C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.AddCustomer.resources
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.CustomerForm.resources
-C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.Encrypt.resources
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.Login.resources
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.MoneyOrder.resources
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.csproj.GenerateResource.cache
@@ -26,3 +24,4 @@ C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\De
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\bin\Debug\net7.0-windows\Customer.pdb
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.genruntimeconfig.cache
 C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\ref\Customer.dll
+C:\Users\bentu\OneDrive\Documents\GitHub\DigitalCash\DigitalCash\Customer\obj\Debug\net7.0-windows\Customer.Properties.Resources.resources

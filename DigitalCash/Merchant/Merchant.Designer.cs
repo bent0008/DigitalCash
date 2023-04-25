@@ -41,14 +41,19 @@
             this.HashBtn = new System.Windows.Forms.Button();
             this.MerchantChkBx = new System.Windows.Forms.CheckBox();
             this.CustomerChkBx = new System.Windows.Forms.CheckBox();
+            this.updateBox = new System.Windows.Forms.RichTextBox();
+            this.ToBankBtn = new System.Windows.Forms.Button();
+            this.VerifyHashesBtn = new System.Windows.Forms.Button();
+            this.RefreshBtn = new System.Windows.Forms.Button();
             this.SuspendLayout();
             // 
             // CustomerLoginBtn
             // 
-            this.CustomerLoginBtn.Location = new System.Drawing.Point(12, 12);
+            this.CustomerLoginBtn.Location = new System.Drawing.Point(14, 16);
+            this.CustomerLoginBtn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.CustomerLoginBtn.Name = "CustomerLoginBtn";
-            this.CustomerLoginBtn.Size = new System.Drawing.Size(75, 23);
-            this.CustomerLoginBtn.TabIndex = 0;
+            this.CustomerLoginBtn.Size = new System.Drawing.Size(86, 31);
+            this.CustomerLoginBtn.TabIndex = 1;
             this.CustomerLoginBtn.Text = "Login";
             this.CustomerLoginBtn.UseVisualStyleBackColor = true;
             this.CustomerLoginBtn.Click += new System.EventHandler(this.CustomerLoginBtn_Click);
@@ -57,10 +62,10 @@
             // 
             this.userLbl.AutoSize = true;
             this.userLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.userLbl.Location = new System.Drawing.Point(182, 12);
+            this.userLbl.Location = new System.Drawing.Point(208, 16);
             this.userLbl.Name = "userLbl";
-            this.userLbl.Padding = new System.Windows.Forms.Padding(5);
-            this.userLbl.Size = new System.Drawing.Size(117, 27);
+            this.userLbl.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+            this.userLbl.Size = new System.Drawing.Size(151, 36);
             this.userLbl.TabIndex = 1;
             this.userLbl.Text = "User:                        ";
             // 
@@ -68,27 +73,27 @@
             // 
             this.balanceLbl.AutoSize = true;
             this.balanceLbl.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.balanceLbl.Location = new System.Drawing.Point(423, 12);
+            this.balanceLbl.Location = new System.Drawing.Point(483, 16);
             this.balanceLbl.Name = "balanceLbl";
-            this.balanceLbl.Padding = new System.Windows.Forms.Padding(5);
-            this.balanceLbl.Size = new System.Drawing.Size(135, 27);
+            this.balanceLbl.Padding = new System.Windows.Forms.Padding(6, 7, 6, 7);
+            this.balanceLbl.Size = new System.Drawing.Size(174, 36);
             this.balanceLbl.TabIndex = 2;
             this.balanceLbl.Text = "Balance:                        ";
             // 
             // usernameLbl
             // 
             this.usernameLbl.AutoSize = true;
-            this.usernameLbl.Location = new System.Drawing.Point(221, 18);
+            this.usernameLbl.Location = new System.Drawing.Point(253, 24);
             this.usernameLbl.Name = "usernameLbl";
-            this.usernameLbl.Size = new System.Drawing.Size(0, 15);
+            this.usernameLbl.Size = new System.Drawing.Size(0, 20);
             this.usernameLbl.TabIndex = 3;
             // 
             // balanceAmountLbl
             // 
             this.balanceAmountLbl.AutoSize = true;
-            this.balanceAmountLbl.Location = new System.Drawing.Point(481, 18);
+            this.balanceAmountLbl.Location = new System.Drawing.Point(550, 24);
             this.balanceAmountLbl.Name = "balanceAmountLbl";
-            this.balanceAmountLbl.Size = new System.Drawing.Size(0, 15);
+            this.balanceAmountLbl.Size = new System.Drawing.Size(0, 20);
             this.balanceAmountLbl.TabIndex = 4;
             // 
             // itemList
@@ -96,9 +101,10 @@
             this.itemList.Columns.AddRange(new System.Windows.Forms.ColumnHeader[] {
             this.itemHeader,
             this.priceHeader});
-            this.itemList.Location = new System.Drawing.Point(444, 81);
+            this.itemList.Location = new System.Drawing.Point(507, 108);
+            this.itemList.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.itemList.Name = "itemList";
-            this.itemList.Size = new System.Drawing.Size(204, 255);
+            this.itemList.Size = new System.Drawing.Size(233, 269);
             this.itemList.TabIndex = 5;
             this.itemList.UseCompatibleStateImageBehavior = false;
             this.itemList.View = System.Windows.Forms.View.Details;
@@ -116,9 +122,10 @@
             // 
             // BuyBtn
             // 
-            this.BuyBtn.Location = new System.Drawing.Point(510, 373);
+            this.BuyBtn.Location = new System.Drawing.Point(585, 385);
+            this.BuyBtn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.BuyBtn.Name = "BuyBtn";
-            this.BuyBtn.Size = new System.Drawing.Size(75, 23);
+            this.BuyBtn.Size = new System.Drawing.Size(86, 31);
             this.BuyBtn.TabIndex = 6;
             this.BuyBtn.Text = "Buy";
             this.BuyBtn.UseVisualStyleBackColor = true;
@@ -126,20 +133,22 @@
             // 
             // RevealBtn
             // 
-            this.RevealBtn.Location = new System.Drawing.Point(155, 184);
+            this.RevealBtn.Location = new System.Drawing.Point(165, 108);
+            this.RevealBtn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.RevealBtn.Name = "RevealBtn";
-            this.RevealBtn.Size = new System.Drawing.Size(101, 23);
-            this.RevealBtn.TabIndex = 7;
+            this.RevealBtn.Size = new System.Drawing.Size(156, 31);
+            this.RevealBtn.TabIndex = 2;
             this.RevealBtn.Text = "Reveal Order";
             this.RevealBtn.UseVisualStyleBackColor = true;
             this.RevealBtn.Click += new System.EventHandler(this.RevealBtn_Click);
             // 
             // HashBtn
             // 
-            this.HashBtn.Location = new System.Drawing.Point(155, 235);
+            this.HashBtn.Location = new System.Drawing.Point(165, 157);
+            this.HashBtn.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.HashBtn.Name = "HashBtn";
-            this.HashBtn.Size = new System.Drawing.Size(101, 23);
-            this.HashBtn.TabIndex = 8;
+            this.HashBtn.Size = new System.Drawing.Size(156, 31);
+            this.HashBtn.TabIndex = 3;
             this.HashBtn.Text = "Reveal Hashes";
             this.HashBtn.UseVisualStyleBackColor = true;
             this.HashBtn.Click += new System.EventHandler(this.HashBtn_Click);
@@ -147,28 +156,72 @@
             // MerchantChkBx
             // 
             this.MerchantChkBx.AutoSize = true;
-            this.MerchantChkBx.Location = new System.Drawing.Point(396, 419);
+            this.MerchantChkBx.Location = new System.Drawing.Point(560, 429);
+            this.MerchantChkBx.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.MerchantChkBx.Name = "MerchantChkBx";
-            this.MerchantChkBx.Size = new System.Drawing.Size(111, 19);
-            this.MerchantChkBx.TabIndex = 9;
+            this.MerchantChkBx.Size = new System.Drawing.Size(135, 24);
+            this.MerchantChkBx.TabIndex = 7;
             this.MerchantChkBx.Text = "Merchant Cheat";
             this.MerchantChkBx.UseVisualStyleBackColor = true;
             // 
             // CustomerChkBx
             // 
             this.CustomerChkBx.AutoSize = true;
-            this.CustomerChkBx.Location = new System.Drawing.Point(585, 419);
+            this.CustomerChkBx.Location = new System.Drawing.Point(560, 461);
+            this.CustomerChkBx.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.CustomerChkBx.Name = "CustomerChkBx";
-            this.CustomerChkBx.Size = new System.Drawing.Size(112, 19);
-            this.CustomerChkBx.TabIndex = 10;
+            this.CustomerChkBx.Size = new System.Drawing.Size(136, 24);
+            this.CustomerChkBx.TabIndex = 8;
             this.CustomerChkBx.Text = "Customer Cheat";
             this.CustomerChkBx.UseVisualStyleBackColor = true;
             // 
+            // updateBox
+            // 
+            this.updateBox.Location = new System.Drawing.Point(50, 300);
+            this.updateBox.Name = "updateBox";
+            this.updateBox.Size = new System.Drawing.Size(375, 185);
+            this.updateBox.TabIndex = 11;
+            this.updateBox.Text = "";
+            // 
+            // ToBankBtn
+            // 
+            this.ToBankBtn.Location = new System.Drawing.Point(165, 250);
+            this.ToBankBtn.Name = "ToBankBtn";
+            this.ToBankBtn.Size = new System.Drawing.Size(156, 29);
+            this.ToBankBtn.TabIndex = 9;
+            this.ToBankBtn.Text = "Send To Bank";
+            this.ToBankBtn.UseVisualStyleBackColor = true;
+            this.ToBankBtn.Click += new System.EventHandler(this.ToBankBtn_Click);
+            // 
+            // VerifyHashesBtn
+            // 
+            this.VerifyHashesBtn.Location = new System.Drawing.Point(165, 205);
+            this.VerifyHashesBtn.Name = "VerifyHashesBtn";
+            this.VerifyHashesBtn.Size = new System.Drawing.Size(156, 29);
+            this.VerifyHashesBtn.TabIndex = 4;
+            this.VerifyHashesBtn.Text = "Verify Hashes";
+            this.VerifyHashesBtn.UseVisualStyleBackColor = true;
+            this.VerifyHashesBtn.Click += new System.EventHandler(this.VerifyHashesBtn_Click);
+            // 
+            // RefreshBtn
+            // 
+            this.RefreshBtn.Location = new System.Drawing.Point(710, 20);
+            this.RefreshBtn.Name = "RefreshBtn";
+            this.RefreshBtn.Size = new System.Drawing.Size(68, 29);
+            this.RefreshBtn.TabIndex = 10;
+            this.RefreshBtn.Text = "Refresh";
+            this.RefreshBtn.UseVisualStyleBackColor = true;
+            this.RefreshBtn.Click += new System.EventHandler(this.RefreshBtn_Click);
+            // 
             // Merchant
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(800, 450);
+            this.ClientSize = new System.Drawing.Size(805, 515);
+            this.Controls.Add(this.RefreshBtn);
+            this.Controls.Add(this.VerifyHashesBtn);
+            this.Controls.Add(this.ToBankBtn);
+            this.Controls.Add(this.updateBox);
             this.Controls.Add(this.CustomerChkBx);
             this.Controls.Add(this.MerchantChkBx);
             this.Controls.Add(this.HashBtn);
@@ -180,6 +233,7 @@
             this.Controls.Add(this.balanceLbl);
             this.Controls.Add(this.userLbl);
             this.Controls.Add(this.CustomerLoginBtn);
+            this.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
             this.Name = "Merchant";
             this.Text = "Merchant";
             this.Load += new System.EventHandler(this.Merchant_Load);
@@ -203,5 +257,9 @@
         private Button HashBtn;
         private CheckBox MerchantChkBx;
         private CheckBox CustomerChkBx;
+        private RichTextBox updateBox;
+        private Button ToBankBtn;
+        private Button VerifyHashesBtn;
+        private Button RefreshBtn;
     }
 }
